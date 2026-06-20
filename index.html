@@ -166,7 +166,7 @@
   .adopt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;margin:18px 0;}
   .adopt-choice{background:#f7faff;border:2.5px solid var(--line);border-radius:18px;padding:8px;cursor:pointer;
     transition:all .15s ease;}
-  .adopt-choice svg{width:100%;height:auto;display:block;}
+  .adopt-choice svg,.adopt-choice img{width:100%;height:auto;display:block;}
   .adopt-choice .cn{font-family:'Baloo 2',cursive;font-weight:700;font-size:.8rem;color:var(--muted);margin-top:2px;}
   .adopt-choice:hover{transform:translateY(-3px);border-color:var(--sky-soft);}
   .adopt-choice.sel{border-color:var(--sun);background:#fff8e6;box-shadow:0 6px 16px rgba(230,167,47,.25);}
@@ -296,7 +296,7 @@
     transition:all .15s;position:relative;text-align:center;}
   .family-pet:hover{transform:translateY(-3px);border-color:var(--sky-soft);}
   .family-pet.active{border-color:var(--sun);background:#fff8e6;box-shadow:0 6px 16px rgba(230,167,47,.25);}
-  .family-pet svg{width:100%;height:auto;}
+  .family-pet svg,.family-pet img{width:100%;height:auto;}
   .family-pet .fn{font-family:'Baloo 2',cursive;font-weight:700;font-size:.85rem;color:var(--sky-deep);margin-top:4px;}
   .family-pet .badge{position:absolute;top:6px;right:6px;background:var(--sun);color:#6b4e10;font-size:.6rem;
     font-weight:800;padding:2px 7px;border-radius:999px;font-family:'Baloo 2',cursive;}
@@ -731,7 +731,7 @@ const clamp=v=>Math.max(0,Math.min(100,v));
 let chosen='cat';
 (function(){const g=$('adoptGrid');PET_LIST.forEach(p=>{
   const d=document.createElement('div');d.className='adopt-choice'+(p.id===chosen?' sel':'');
-  d.innerHTML=SPRITES[p.id]+'<div class="cn">'+p.nm+'</div>';
+  d.innerHTML='<img src="data:image/svg+xml,'+encodeURIComponent(SPRITES[p.id])+'"><div class="cn">'+p.nm+'</div>';
   d.onclick=()=>{chosen=p.id;[...g.children].forEach(c=>c.classList.remove('sel'));d.classList.add('sel');};
   g.appendChild(d);});})();
 $('adoptBtn').onclick=()=>{const nm=$('nameInput').value.trim();
@@ -1300,7 +1300,7 @@ if(!PET_LIST.some(p=>p.id==='manatee')){
 (function rebuildAdopt(){const g=$('adoptGrid');if(!g)return;g.innerHTML='';
   PET_LIST.forEach(p=>{const d=document.createElement('div');
     d.className='adopt-choice'+(p.id===chosen?' sel':'');
-    d.innerHTML=SPRITES[p.id]+'<div class="cn">'+p.nm+'</div>';
+    d.innerHTML='<img src="data:image/svg+xml,'+encodeURIComponent(SPRITES[p.id])+'"><div class="cn">'+p.nm+'</div>';
     d.onclick=()=>{chosen=p.id;[...g.children].forEach(c=>c.classList.remove('sel'));d.classList.add('sel');};
     g.appendChild(d);});
 })();
@@ -1470,7 +1470,7 @@ function renderFamily(){
   const g=$('familyGrid');if(!g)return;g.innerHTML='';
   S.family.forEach(p=>{
     const d=document.createElement('div');d.className='family-pet'+(p.key===S.activeKey?' active':'');
-    d.innerHTML=(p.key===S.activeKey?'<span class="badge">active</span>':'')+SPRITES[p.id]+'<div class="fn">'+p.name+'</div>';
+    d.innerHTML=(p.key===S.activeKey?'<span class="badge">active</span>':'')+'<img src="data:image/svg+xml,'+encodeURIComponent(SPRITES[p.id])+'"><div class="fn">'+p.name+'</div>';
     d.onclick=()=>{S.activeKey=p.key;syncActivePet();closePetModal();render();toast('Now playing with '+p.name+'!');};
     g.appendChild(d);
   });
@@ -1481,7 +1481,7 @@ let chosen2='cat';
 function buildAdopt2(){const g=$('adoptGrid2');if(!g)return;g.innerHTML='';
   PET_LIST.forEach(p=>{const d=document.createElement('div');
     d.className='adopt-choice'+(p.id===chosen2?' sel':'');
-    d.innerHTML=SPRITES[p.id]+'<div class="cn">'+p.nm+'</div>';
+    d.innerHTML='<img src="data:image/svg+xml,'+encodeURIComponent(SPRITES[p.id])+'"><div class="cn">'+p.nm+'</div>';
     d.onclick=()=>{chosen2=p.id;[...g.children].forEach(c=>c.classList.remove('sel'));d.classList.add('sel');};
     g.appendChild(d);});}
 $('adoptMoreBtn')&&($('adoptMoreBtn').onclick=()=>{closePetModal();buildAdopt2();$('adoptModal').classList.add('show');});
