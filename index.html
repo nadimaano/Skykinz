@@ -369,6 +369,20 @@
   .fish-catch{position:absolute;left:50%;top:20px;transform:translateX(-50%);font-size:2rem;
     display:none;animation:catch_pop .5s ease-out;}
 
+  /* Profile selection screen */
+  .profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;margin-top:14px;}
+  .profile-card{background:#f5f8ff;border:2px solid var(--line);border-radius:20px;padding:16px 10px 12px;
+    text-align:center;cursor:pointer;transition:all .22s;position:relative;}
+  .profile-card:hover{border-color:var(--grape);background:#f0e8ff;transform:translateY(-3px);
+    box-shadow:0 6px 18px rgba(160,100,220,.15);}
+  .pf-pet{width:80px;height:80px;display:block;margin:0 auto 10px;object-fit:contain;}
+  .pf-name{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--sky-deep);}
+  .pf-sub{font-size:.72rem;color:var(--muted);margin-top:3px;}
+  .pf-del{position:absolute;top:7px;right:9px;background:none;border:none;color:var(--coral);
+    font-size:.8rem;font-weight:700;cursor:pointer;opacity:.35;line-height:1;
+    transition:opacity .15s;padding:0;}
+  .pf-del:hover{opacity:1;}
+
 
   /* ===== v6: switch pet + new games ===== */
   .switch-row{margin-top:8px;}
@@ -519,6 +533,18 @@
   <div class="brand">Sky<span class="k">Kinz</span></div>
   <div class="tagline">a little sky for your pet to live in</div>
 </header>
+
+<!-- PROFILE SCREEN -->
+<div class="wrap hidden" id="profileScreen">
+  <div class="card">
+    <h2>Who's playing? 🌟</h2>
+    <p class="lead">Choose your profile to continue your adventure.</p>
+    <div class="profile-grid" id="profileGrid"></div>
+    <div class="btn-row center" style="margin-top:18px">
+      <button id="addProfileBtn" class="b-sun">+ New Profile</button>
+    </div>
+  </div>
+</div>
 
 <!-- ADOPT -->
 <div class="wrap" id="adoptWrap">
@@ -1725,14 +1751,18 @@ function activePet(){return S.family.find(p=>p.key===S.activeKey)|| S.family[0];
 function syncActivePet(){const a=activePet();if(a){S.pet=a.id;S.name=a.name;}}
 
 /* hook the original adopt button to seed the family */
-const _origAdopt=$('adoptBtn').onclick;
 $('adoptBtn').onclick=function(){
+  const un=($('userNameInput')&&$('userNameInput').value.trim())||'';
   const nm=$('nameInput').value.trim();
-  if(!nm){toast('Give your pet a name first!');$('nameInput').focus();return;}
-  S.adopted=true;S.pet=chosen;S.name=nm;
+  if(!un){toast('Tell us your name first!');$('userNameInput')&&$('userNameInput').focus();return;}
+  if(!nm){toast('Give your pet a name!');$('nameInput').focus();return;}
+  S.adopted=true;S.pet=chosen;S.name=nm;S.userName=un;
+  S.birthday=($('petBirthday')&&$('petBirthday').value)||'';
   S.family=[{key:'p0',id:chosen,name:nm}];S.activeKey='p0';
   $('adoptWrap').classList.add('hidden');$('game').classList.remove('hidden');
-  buildShop();render();toast('Welcome home, '+nm+'! ☁');
+  buildShop();typeof renderAchievements==='function'&&renderAchievements();render();
+  toast('Welcome, '+un+'! Take good care of '+nm+' ☁');
+  setTimeout(checkBirthday,800);
 };
 
 /* Switch-pet modal */
@@ -2549,6 +2579,137 @@ if(S.adopted){buildWallpaperShop();buildDailyDeals();}
 /* Re-set on load (in case render is called after) */
 const _luRender=render;
 render=function(){_luRender();const ln=$('letterName');if(ln&&S.userName)ln.textContent=S.userName;};
+
+/* ===== PROFILE SYSTEM ===== */
+(function(){
+  const PK='skz_profiles';  // [{id,userName,pet,petName,level,cash}]
+  const DK=id=>'skz_pdata_'+id;
+  function getProfs(){try{return JSON.parse(localStorage.getItem(PK))||[];}catch(e){return[];}}
+  function setProfs(a){try{localStorage.setItem(PK,JSON.stringify(a));}catch(e){}}
+  function loadD(id){try{return JSON.parse(localStorage.getItem(DK(id)))||null;}catch(e){return null;}}
+
+  let aid=null; // currently active profile id
+
+  // Override saveGame to write to per-profile key
+  const _baseSG=saveGame;
+  saveGame=function(){
+    if(aid){try{localStorage.setItem(DK(aid),JSON.stringify(S));}catch(e){}}
+    else _baseSG();
+    // Keep profile metadata fresh
+    if(aid&&S.adopted){
+      const profs=getProfs();const pi=profs.findIndex(p=>p.id===aid);
+      if(pi>=0){profs[pi]={...profs[pi],userName:S.userName||profs[pi].userName,
+        pet:S.pet,petName:S.name,level:S.level||1,cash:S.cash||0};setProfs(profs);}
+    }
+  };
+
+  // Migrate old skykinz_v2 save into a profile slot
+  function migrateOld(){
+    if(localStorage.getItem('skz_migrated'))return null;
+    const old=localStorage.getItem('skykinz_v2');if(!old)return null;
+    try{
+      const d=JSON.parse(old);if(!d.adopted)return null;
+      const id='p_migrate';
+      localStorage.setItem(DK(id),old);
+      const prof={id,userName:d.userName||d.name||'Player',pet:d.pet||'cat',
+        petName:d.name||'?',level:d.level||1,cash:d.cash||0};
+      setProfs([prof]);
+      localStorage.setItem('skz_migrated','1');
+      return id;
+    }catch(e){return null;}
+  }
+
+  function renderProfileScreen(){
+    const ps=$('profileScreen');const pg=$('profileGrid');if(!ps||!pg)return;
+    pg.innerHTML='';
+    getProfs().forEach(p=>{
+      const d=document.createElement('div');d.className='profile-card';
+      const petSvg=SPRITES[p.pet]||SPRITES.cat;
+      d.innerHTML=`<img class="pf-pet" src="data:image/svg+xml,${encodeURIComponent(petSvg)}">
+        <div class="pf-name">${p.userName||'Player'}</div>
+        <div class="pf-sub">${p.petName||'?'} · Lv.${p.level||1}</div>`;
+      d.onclick=()=>selectProfile(p.id);
+      const db=document.createElement('button');db.className='pf-del';db.textContent='✕';
+      db.title='Delete profile';
+      db.onclick=e=>{e.stopPropagation();
+        if(!confirm('Delete '+(p.userName||'this profile')+"'s save? This can't be undone."))return;
+        const profs=getProfs().filter(x=>x.id!==p.id);setProfs(profs);
+        try{localStorage.removeItem(DK(p.id));}catch(e){}
+        if(profs.length===0)newProfile();else renderProfileScreen();};
+      d.appendChild(db);pg.appendChild(d);
+    });
+    $('adoptWrap')&&$('adoptWrap').classList.add('hidden');
+    $('game')&&$('game').classList.add('hidden');
+    ps.classList.remove('hidden');
+  }
+
+  const DEFAULT_STATE={adopted:false,pet:'cat',name:'',userName:'',cash:50,
+    hunger:72,happy:72,energy:82,pantry:{},furn:{},placed:[],best:0,
+    level:1,xp:0,feedCount:0,playCount:0,tapCount:0,gameWins:0,spinCount:0,
+    achievements:[],birthday:'',birthdayCelebrated:false,isBirthday:false,
+    wallpaper:'',wallpapers:{},noahPetId:'bear',family:null,activeKey:null,worn:{},acc:{}};
+
+  function selectProfile(id){
+    const data=loadD(id);
+    aid=id;
+    Object.assign(S,JSON.parse(JSON.stringify(DEFAULT_STATE))); // reset
+    if(data)Object.assign(S,data);
+    $('profileScreen')&&$('profileScreen').classList.add('hidden');
+    if(S.adopted){
+      $('adoptWrap')&&$('adoptWrap').classList.add('hidden');
+      $('game')&&$('game').classList.remove('hidden');
+      if(typeof migratePlaced==='function')migratePlaced();
+      if(typeof syncActivePet==='function')syncActivePet();
+      if(typeof buildShop==='function')buildShop();
+      render();
+      toast('Welcome back, '+(S.userName||S.name)+'! ☁');
+      setTimeout(()=>{typeof checkBirthday==='function'&&checkBirthday();
+        typeof checkDailyGift==='function'&&checkDailyGift();},800);
+    }else{
+      $('adoptWrap')&&$('adoptWrap').classList.remove('hidden');
+    }
+  }
+
+  function newProfile(){
+    aid='p_'+Date.now();
+    Object.assign(S,JSON.parse(JSON.stringify(DEFAULT_STATE)));
+    $('profileScreen')&&$('profileScreen').classList.add('hidden');
+    $('game')&&$('game').classList.add('hidden');
+    $('adoptWrap')&&$('adoptWrap').classList.remove('hidden');
+    const ui=$('userNameInput');const ni=$('nameInput');
+    if(ui)ui.value='';if(ni)ni.value='';
+  }
+
+  // After successful adoption, register profile in the list
+  const _adoptFn=$('adoptBtn').onclick;
+  $('adoptBtn').onclick=function(){
+    _adoptFn.call(this);
+    if(S.adopted){
+      const profs=getProfs().filter(p=>p.id!==aid);
+      profs.push({id:aid,userName:S.userName||'Player',pet:S.pet,petName:S.name,
+        level:S.level||1,cash:S.cash||0});
+      setProfs(profs);saveGame();
+    }
+  };
+
+  $('addProfileBtn')&&($('addProfileBtn').onclick=newProfile);
+
+  // INIT: decide which screen to show
+  const existingProfs=getProfs();
+  if(existingProfs.length>0){
+    // Profiles exist → always show picker (override whatever IIFE loaded)
+    renderProfileScreen();
+  }else{
+    const migId=migrateOld();
+    if(migId){
+      // Old save migrated → show picker with the migrated profile
+      renderProfileScreen();
+    }else{
+      // Truly fresh → adopt screen already visible, just set a new profile id
+      aid='p_'+Date.now();
+    }
+  }
+})();
 
 </script>
 </body>
