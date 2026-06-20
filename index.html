@@ -281,6 +281,10 @@
     pointer-events:none;animation:floatup 1.2s ease forwards;}
   /* keep accessories scaled onto the smaller room pet */
   .room .room-pet .acc-layer{inset:0;}
+  .room .room-pet .walker .rp-sprite{width:100%;height:100%;display:block;object-fit:contain;}
+  .release-btn{display:block;width:100%;margin-top:6px;padding:3px 0;border:none;background:none;
+    color:var(--coral);font-size:.68rem;font-weight:700;cursor:pointer;opacity:.55;transition:opacity .15s;}
+  .release-btn:hover{opacity:1;}
 
 
   /* ===== v6: switch pet + new games ===== */
@@ -865,7 +869,7 @@ function mood(){const a=(S.hunger+S.happy+S.energy)/3;
   if(a>76)return 'feeling great!';if(a>46)return 'doing okay';return 'a little blue';}
 function render(){
   $('petHolder').innerHTML=SPRITES[S.pet];
-  $('roomPet').innerHTML=SPRITES[S.pet];
+  $('roomPet').innerHTML='<img class="rp-sprite" src="data:image/svg+xml,'+encodeURIComponent(SPRITES[S.pet])+'">';
   $('petName').textContent=S.name;$('mood').textContent=mood();
   $('cash').textContent=S.cash;$('gBest').textContent=S.best;
   $('bHunger').style.width=S.hunger+'%';$('pHunger').textContent=Math.round(S.hunger);
@@ -1322,7 +1326,8 @@ function renderRoomPet(){
   let acc='';
   for(const slot in S.worn){const id=S.worn[slot];if(id&&ACC_SVG[id])acc+=ACC_SVG[id];}
   const accLayer=acc?`<div class="acc-layer"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">${acc}</svg></div>`:'';
-  rp.innerHTML=`<div class="walker">${SPRITES[S.pet]}${accLayer}</div>`;
+  const petImg=`<img class="rp-sprite" src="data:image/svg+xml,${encodeURIComponent(SPRITES[S.pet])}">`;
+  rp.innerHTML=`<div class="walker">${petImg}${accLayer}</div>`;
 }
 
 /* Re-wrap render: keep everything, but the room pet is now managed by the walker.
@@ -1588,7 +1593,18 @@ function renderFamily(){
     const d=document.createElement('div');d.className='family-pet'+(p.key===S.activeKey?' active':'');
     d.innerHTML=(p.key===S.activeKey?'<span class="badge">active</span>':'')+'<img src="data:image/svg+xml,'+encodeURIComponent(SPRITES[p.id])+'"><div class="fn">'+p.name+'</div>';
     d.onclick=()=>{S.activeKey=p.key;syncActivePet();closePetModal();render();toast('Now playing with '+p.name+'!');};
-    g.appendChild(d);
+    const rb=document.createElement('button');rb.className='release-btn';rb.textContent='✕ Release';
+    rb.title='Release '+p.name+' back to the sky';
+    rb.onclick=e=>{
+      e.stopPropagation();
+      if((S.family||[]).length<=1){toast("You can't release your only pet!");return;}
+      if(!confirm('Release '+p.name+'? This can\'t be undone.'))return;
+      S.family=S.family.filter(x=>x.key!==p.key);
+      if(S.activeKey===p.key){S.activeKey=S.family[0].key;syncActivePet();}
+      renderFamily();render();
+      toast(p.name+' was released to the sky ☁');
+    };
+    d.appendChild(rb);g.appendChild(d);
   });
 }
 
