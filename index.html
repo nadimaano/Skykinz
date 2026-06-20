@@ -286,6 +286,89 @@
     color:var(--coral);font-size:.68rem;font-weight:700;cursor:pointer;opacity:.55;transition:opacity .15s;}
   .release-btn:hover{opacity:1;}
 
+  /* Weather window */
+  .window{overflow:hidden;}
+  .window.wx-rain{background:linear-gradient(180deg,#607a8c 0%,#8aaab8 100%)!important;}
+  .window.wx-snow{background:linear-gradient(180deg,#c8d8ec 0%,#dde8f0 100%)!important;}
+  .window.wx-storm{background:linear-gradient(180deg,#455060 0%,#6a7888 100%)!important;}
+  .window.wx-cloudy{background:linear-gradient(180deg,#8898a8 0%,#aab8c4 100%)!important;}
+  .wx-drop{position:absolute;width:2px;border-radius:1px;background:rgba(120,180,255,.75);
+    animation:wx_fall linear infinite;}
+  @keyframes wx_fall{from{transform:translateY(-10px)}to{transform:translateY(64px)}}
+  .wx-flake{position:absolute;font-size:.55rem;color:#fff;opacity:.85;
+    animation:wx_flt linear infinite;}
+  @keyframes wx_flt{from{transform:translateY(-8px) rotate(0)}to{transform:translateY(64px) rotate(360deg)}}
+  .wx-sun{position:absolute;bottom:3px;right:4px;font-size:1rem;animation:wx_pulse 3s ease-in-out infinite;}
+  @keyframes wx_pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+  .wx-bolt{position:absolute;font-size:1rem;animation:wx_zap .6s ease-in-out infinite alternate;}
+  @keyframes wx_zap{from{opacity:.5}to{opacity:1}}
+
+  /* Noah companion pet */
+  .noah-companion{right:8px!important;left:auto!important;width:66px!important;height:66px!important;
+    bottom:8px!important;animation:np_bob 3.4s ease-in-out infinite;z-index:3!important;}
+  @keyframes np_bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .noah-companion::before{content:'♡ Noah';position:absolute;top:-15px;left:50%;
+    transform:translateX(-50%);font-size:.52rem;font-family:'Baloo 2',cursive;
+    color:var(--grape);white-space:nowrap;opacity:.7;pointer-events:none;}
+  .noah-heart{position:absolute;pointer-events:none;font-size:1rem;z-index:10;
+    animation:nh_float 1.6s ease-out forwards;}
+  @keyframes nh_float{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-45px)}}
+
+  /* Wallpaper shop */
+  .wp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px;}
+  .wp-card{background:#f5f8ff;border:2px solid var(--line);border-radius:14px;padding:10px 8px;
+    text-align:center;cursor:pointer;transition:all .2s;}
+  .wp-card.owned{border-color:var(--mint);}
+  .wp-card.equipped{border-color:var(--grape);background:#f0e6ff;}
+  .wp-preview{height:40px;border-radius:8px;margin-bottom:6px;}
+  .wp-nm{font-family:'Baloo 2',cursive;font-size:.7rem;font-weight:700;color:var(--sky-deep);
+    display:block;margin-bottom:4px;}
+  .wp-price{font-size:.68rem;color:var(--muted);}
+
+  /* Daily deals */
+  .deal-item{border:2px solid var(--sun);background:linear-gradient(135deg,#fffbea,#fff8d6);
+    border-radius:14px;padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .deal-art{font-size:1.8rem;}
+  .deal-info{flex:1;}
+  .deal-nm{font-family:'Baloo 2',cursive;font-size:.88rem;font-weight:700;color:var(--sky-deep);}
+  .deal-prices{font-size:.76rem;margin-top:2px;}
+  .deal-orig{text-decoration:line-through;color:var(--muted);margin-right:6px;}
+  .deal-sale{color:var(--coral);font-weight:700;}
+  .deal-badge{background:var(--coral);color:#fff;border-radius:6px;font-size:.6rem;
+    font-weight:700;padding:1px 5px;vertical-align:middle;margin-left:4px;}
+  .deal-timer{font-size:.72rem;color:var(--muted);text-align:center;margin-top:4px;}
+
+  /* Pet racing */
+  .race-wrap{background:linear-gradient(180deg,#a8d8a0 0%,#7cc070 100%);
+    border-radius:14px;padding:10px;margin:12px 0;position:relative;overflow:hidden;}
+  .race-lane{position:relative;height:52px;border-radius:8px;margin:5px 0;background:rgba(255,255,255,.35);}
+  .race-lane.player-lane{background:rgba(255,246,200,.7);}
+  .race-flag{position:absolute;right:4px;top:0;bottom:0;width:3px;
+    background:repeating-linear-gradient(180deg,#111 0 6px,#fff 6px 12px);}
+  .race-runner{position:absolute;top:50%;transform:translateY(-50%);left:2%;
+    font-size:1.4rem;transition:left .12s linear;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));}
+  .race-label{position:absolute;left:4px;top:2px;font-size:.58rem;font-family:'Baloo 2',cursive;
+    font-weight:700;color:#444;opacity:.8;}
+  .race-msg{text-align:center;font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;
+    color:var(--grape);min-height:1.4em;margin-top:4px;}
+
+  /* Fishing */
+  .fish-pond{background:linear-gradient(180deg,#7ec8e3 0%,#1a78b4 100%);border-radius:14px;
+    height:130px;position:relative;overflow:hidden;margin:12px 0;cursor:pointer;}
+  .fish-surface{position:absolute;left:0;right:0;top:30%;height:6px;
+    background:rgba(255,255,255,.35);border-radius:3px;}
+  .fish-line{position:absolute;left:50%;top:0;width:2px;background:#8b6914;
+    transform:translateX(-50%);height:0;transition:height .5s;}
+  .fish-hook{position:absolute;left:50%;transform:translateX(-50%);font-size:1.1rem;
+    top:8px;transition:top .5s;user-select:none;}
+  .fish-hook.cast{top:38%;}
+  .fish-hook.nibble{animation:nibble_jig .25s ease-in-out 4;}
+  @keyframes nibble_jig{0%,100%{transform:translateX(-50%)}50%{transform:translateX(-50%) translateY(7px)}}
+  .fish-mob{position:absolute;bottom:14px;font-size:1.3rem;left:110%;transition:left 2.5s linear;}
+  .fish-mob.swim{left:-15%;}
+  .fish-catch{position:absolute;left:50%;top:20px;transform:translateX(-50%);font-size:2rem;
+    display:none;animation:catch_pop .5s ease-out;}
+
 
   /* ===== v6: switch pet + new games ===== */
   .switch-row{margin-top:8px;}
@@ -444,6 +527,7 @@
     <p class="lead">Choose a companion, then give them a name to bring them home.</p>
     <div class="adopt-grid" id="adoptGrid"></div>
     <div class="name-field">
+      <input id="userNameInput" type="text" placeholder="Your name (e.g. Sky)" maxlength="20" autocomplete="off" style="margin-bottom:8px">
       <input id="nameInput" type="text" placeholder="Name your pet" maxlength="14" autocomplete="off">
       <input id="petBirthday" type="date" placeholder="Birthday (optional)" style="margin-top:8px;width:100%;border:2px solid var(--line);border-radius:12px;padding:10px 14px;font-family:'Nunito',sans-serif;font-size:.95rem;outline:none;color:var(--ink)">
       <button id="adoptBtn" class="b-sun">Bring home</button>
@@ -644,6 +728,50 @@
         <div class="bite-track" id="biteTrack"><div class="bite-zone" id="biteZone"></div><div class="bite-marker" id="biteMarker"></div></div>
         <div class="btn-row center"><button id="biteFeed" class="b-coral">Feed!</button><button id="biteStart" class="b-sun">Start</button></div>
       </div>
+
+      <!-- Pet Racing -->
+      <div class="card game-card hidden" id="g-race">
+        <button class="backbtn" onclick="closeGame()">← Arcade</button>
+        <h2>🏁 Pet Racing</h2>
+        <p class="lead">Tap as fast as you can to make your pet run! 10-second race.</p>
+        <div class="race-wrap" id="raceWrap">
+          <div class="race-lane player-lane">
+            <span class="race-label">YOU</span>
+            <span class="race-runner" id="raceP1">🐾</span>
+            <div class="race-flag"></div>
+          </div>
+          <div class="race-lane">
+            <span class="race-label">RIVAL</span>
+            <span class="race-runner" id="raceP2">🌀</span>
+            <div class="race-flag"></div>
+          </div>
+        </div>
+        <div class="ghud"><span class="stat">Time <b id="raceTime">10</b>s</span></div>
+        <p class="race-msg" id="raceMsg">Ready to race?</p>
+        <div class="btn-row center">
+          <button id="raceTap" class="b-sun" style="font-size:1.1rem;padding:14px 28px" disabled>TAP! TAP! TAP!</button>
+          <button id="raceStart" class="b-mint">Start Race</button>
+        </div>
+      </div>
+
+      <!-- Fishing -->
+      <div class="card game-card hidden" id="g-fish">
+        <button class="backbtn" onclick="closeGame()">← Arcade</button>
+        <h2>🎣 Gone Fishing</h2>
+        <p class="lead">Cast your line, wait for a nibble, then reel in fast!</p>
+        <div class="fish-pond" id="fishPond">
+          <div class="fish-surface"></div>
+          <div class="fish-line" id="fishLine"></div>
+          <div class="fish-hook" id="fishHook">🪝</div>
+          <div class="fish-mob" id="fishMob">🐟</div>
+          <div class="fish-catch" id="fishCatch">🐠</div>
+        </div>
+        <div class="ghud"><span id="fishMsg" style="font-weight:600;color:var(--sky-deep)">Cast your line to begin!</span></div>
+        <div class="btn-row center">
+          <button id="fishReel" class="b-grape" disabled>🎣 Reel In!</button>
+          <button id="fishCast" class="b-mint">Cast Line</button>
+        </div>
+      </div>
     </section>
 
     <!-- SHOP -->
@@ -653,12 +781,21 @@
         <p class="lead">One free spin every day — win SkyCash, food, or surprise prizes!</p>
         <div class="btn-row center"><button id="spinBtn" class="b-grape">🎡 Spin Now</button></div>
       </div>
+      <div class="card" id="dealCard">
+        <h2>⚡ Daily Deals <span class="deal-badge">-45% OFF</span></h2>
+        <p class="lead">Special prices that reset at midnight!</p>
+        <div id="dealGrid"></div>
+        <p class="deal-timer" id="dealTimer"></p>
+      </div>
       <div class="card">
         <h2>Sky Shop</h2>
         <h3>Food</h3>
         <div class="grid" id="shopFood"></div>
         <h3 style="margin-top:18px">Furniture</h3>
         <div class="grid" id="shopFurn"></div>
+        <h3 style="margin-top:18px">🖼️ Wallpapers</h3>
+        <p style="font-size:.8rem;color:var(--muted);margin:0 0 10px">Redecorate your room!</p>
+        <div class="wp-grid" id="wpGrid"></div>
       </div>
     </section>
 
@@ -672,6 +809,7 @@
           <div class="room-baseboard"></div>
           <div id="roomNightOverlay" class="room-night-overlay"></div>
           <div class="room-pet" id="roomPet"></div>
+          <div class="room-pet noah-companion" id="noahPet"></div>
           <div class="floor-items" id="floorItems"></div>
           <div class="hint" id="roomHint">your room is empty</div>
         </div>
@@ -757,7 +895,7 @@
     <div style="font-size:3rem;margin-bottom:6px">💌</div>
     <h2>A letter from Noah</h2>
     <p style="font-family:'Nunito';line-height:1.8;margin:14px 0 22px;color:var(--ink);font-size:.97rem">
-      Hey Sky ☁<br><br>
+      Hey <span id="letterName">Sky</span> ☁<br><br>
       I made this whole little world just for you.
       Take good care of your pet — feed them, play with them,
       make their room cozy.<br><br>
@@ -824,11 +962,20 @@ const FURN=[
   {id:'books',e:'📚',nm:'Bookshelf',price:65},
   {id:'clock',e:'🕰️',nm:'Clock',price:50},
 ];
+const WALLPAPERS=[
+  {id:'lavender',nm:'Lavender Dream',price:0,wall:'linear-gradient(180deg,#ede1f7 0%,#e0cff2 55%,#b07840 56%,#c8905e 100%)',preview:'linear-gradient(135deg,#e0cff2,#c8905e)'},
+  {id:'ocean',nm:'Ocean Breeze',price:90,wall:'linear-gradient(180deg,#b8e4ff 0%,#8dcef5 55%,#2a6e8a 56%,#3a8aa8 100%)',preview:'linear-gradient(135deg,#8dcef5,#3a8aa8)'},
+  {id:'forest',nm:'Forest Glen',price:90,wall:'linear-gradient(180deg,#c8ead4 0%,#a6d4b0 55%,#5a3e1e 56%,#6e5028 100%)',preview:'linear-gradient(135deg,#a6d4b0,#6e5028)'},
+  {id:'sunset',nm:'Sunset Glow',price:100,wall:'linear-gradient(180deg,#ffd5a0 0%,#ffb870 55%,#8b3a1a 56%,#a84f28 100%)',preview:'linear-gradient(135deg,#ffb870,#a84f28)'},
+  {id:'midnight',nm:'Midnight Sky',price:120,wall:'linear-gradient(180deg,#1a1a3e 0%,#2a2456 55%,#1a0a2e 56%,#2a1042 100%)',preview:'linear-gradient(135deg,#2a2456,#2a1042)'},
+  {id:'sakura',nm:'Cherry Blossom',price:110,wall:'linear-gradient(180deg,#ffe0f0 0%,#ffcce6 55%,#8b2e4a 56%,#a33a5a 100%)',preview:'linear-gradient(135deg,#ffcce6,#a33a5a)'},
+];
 
-let S={adopted:false,pet:'cat',name:'',cash:50,
+let S={adopted:false,pet:'cat',name:'',userName:'',cash:50,
   hunger:72,happy:72,energy:82,pantry:{},furn:{},placed:[],best:0,
   level:1,xp:0,feedCount:0,playCount:0,tapCount:0,gameWins:0,
-  spinCount:0,achievements:[],birthday:'',birthdayCelebrated:false,isBirthday:false};
+  spinCount:0,achievements:[],birthday:'',birthdayCelebrated:false,isBirthday:false,
+  wallpaper:'',wallpapers:{},noahPetId:'bear'};
 
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
@@ -849,11 +996,15 @@ let chosen='cat';
   d.innerHTML='<img src="data:image/svg+xml,'+encodeURIComponent(SPRITES[p.id])+'"><div class="cn">'+p.nm+'</div>';
   d.onclick=()=>{chosen=p.id;[...g.children].forEach(c=>c.classList.remove('sel'));d.classList.add('sel');};
   g.appendChild(d);});})();
-$('adoptBtn').onclick=()=>{const nm=$('nameInput').value.trim();
-  if(!nm){toast('Give your pet a name first!');$('nameInput').focus();return;}
-  S.adopted=true;S.pet=chosen;S.name=nm;S.birthday=$('petBirthday').value||'';
+$('adoptBtn').onclick=()=>{
+  const un=$('userNameInput').value.trim();
+  const nm=$('nameInput').value.trim();
+  if(!un){toast('Tell us your name first!');$('userNameInput').focus();return;}
+  if(!nm){toast('Give your pet a name!');$('nameInput').focus();return;}
+  S.adopted=true;S.pet=chosen;S.name=nm;S.userName=un;S.birthday=$('petBirthday').value||'';
   $('adoptWrap').classList.add('hidden');$('game').classList.remove('hidden');
-  buildShop();renderAchievements();render();toast('Welcome home, '+nm+'! ☁');
+  buildShop();renderAchievements();render();
+  toast('Welcome, '+un+'! Take good care of '+nm+' ☁');
   setTimeout(checkBirthday,800);};
 $('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('adoptBtn').click();});
 
@@ -879,7 +1030,7 @@ function render(){
   const lvEl=$('lvDisplay');if(lvEl)lvEl.textContent=lv;
   const xpBar=$('xpBar');if(xpBar)xpBar.style.width=Math.min(100,(xp/need*100))+'%';
   const xpLbl=$('xpLabel');if(xpLbl)xpLbl.textContent=xp+' / '+need+' XP';
-  renderPantry();renderRoom();renderFurnInv();
+  renderPantry();renderRoom();renderFurnInv();applyWallpaper();
 }
 function renderPantry(){const el=$('pantry');const items=Object.entries(S.pantry).filter(([,n])=>n>0);
   if(!items.length){el.innerHTML='<p class="empty">Empty — buy food at the W Shop.</p>';return;}
@@ -1167,6 +1318,8 @@ const GAMES=[
   {id:'slide',gi:'🧩',gt:'Slidey Pic',gd:'Solve the puzzle'},
   {id:'scramble',gi:'🔤',gt:'Word Jumble',gd:'Unscramble words'},
   {id:'timing',gi:'🍴',gt:'Perfect Bite',gd:'Feed at the right time'},
+  {id:'race',gi:'🏁',gt:'Pet Racing',gd:'Tap to win the race'},
+  {id:'fish',gi:'🎣',gt:'Gone Fishing',gd:'Catch fish for prizes'},
 ];
 function buildGameHub(){const el=$('gamePick');if(!el)return;el.innerHTML='';
   GAMES.forEach(g=>{const d=document.createElement('div');d.className='gtile';
@@ -1909,7 +2062,7 @@ render = function() {
     if (typeof buildShop === 'function') buildShop();
     if (typeof migratePlaced === 'function') migratePlaced();
     render();
-    toast('Welcome back, ' + S.name + '! ☁');
+    toast('Welcome back, ' + (S.userName||S.name) + '! ☁');
     setTimeout(()=>{checkBirthday&&checkBirthday();},800);
   }
 })();
@@ -2157,6 +2310,245 @@ render=function(){
   renderBirthdayDecor();
   renderAchievements();
 };
+
+/* ===== WALLPAPER SYSTEM ===== */
+function applyWallpaper(){
+  const room=$('room');if(!room)return;
+  if(S.wallpaper){
+    const wp=WALLPAPERS.find(w=>w.id===S.wallpaper);
+    if(wp){room.style.background=wp.wall;return;}
+  }
+  room.style.background='';
+}
+function buildWallpaperShop(){
+  const g=$('wpGrid');if(!g)return;g.innerHTML='';
+  WALLPAPERS.forEach(wp=>{
+    const owned=wp.price===0||!!(S.wallpapers&&S.wallpapers[wp.id]);
+    const equipped=S.wallpaper===wp.id;
+    const d=document.createElement('div');
+    d.className='wp-card'+(owned?' owned':'')+(equipped?' equipped':'');
+    d.innerHTML=`<div class="wp-preview" style="background:${wp.preview}"></div>
+      <span class="wp-nm">${wp.nm}</span>`;
+    const b=document.createElement('button');
+    if(equipped){b.textContent='Equipped ✓';b.className='b-grape';b.style.opacity='.6';
+      b.onclick=()=>{S.wallpaper='';render();buildWallpaperShop();toast('Wallpaper removed.');};
+    }else if(owned||wp.price===0){b.textContent='Equip';b.className='b-mint';
+      b.onclick=()=>{S.wallpaper=wp.id;render();buildWallpaperShop();toast('Room updated! 🖼️');};
+    }else{b.textContent='Buy ☁'+wp.price;b.className='b-sun';
+      b.onclick=()=>{
+        if(S.cash<wp.price){toast('Not enough SkyCash!');return;}
+        S.cash-=wp.price;S.wallpapers=S.wallpapers||{};S.wallpapers[wp.id]=true;
+        S.wallpaper=wp.id;render();buildWallpaperShop();toast(wp.nm+' equipped! 🖼️');
+      };
+    }
+    d.appendChild(b);g.appendChild(d);
+  });
+}
+
+/* ===== DAILY DEALS ===== */
+function getDailyDeals(){
+  const d=new Date();
+  const seed=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+  const pool=[...FOODS,...FURN].filter(x=>x.price>=10);
+  const i1=seed%pool.length;
+  const i2=(seed*13+7)%pool.length;
+  const picks=i1===i2?[pool[i1],pool[(i1+1)%pool.length]]:[pool[i1],pool[i2]];
+  return picks.map(x=>({...x,origPrice:x.price,price:Math.max(3,Math.floor(x.price*0.55))}));
+}
+function buildDailyDeals(){
+  const g=$('dealGrid');if(!g)return;g.innerHTML='';
+  const deals=getDailyDeals();
+  deals.forEach(item=>{
+    const isFood=!!item.fill;
+    const d=document.createElement('div');d.className='deal-item';
+    d.innerHTML=`<div class="deal-art">${item.e}</div>
+      <div class="deal-info">
+        <div class="deal-nm">${item.nm}</div>
+        <div class="deal-prices">
+          <span class="deal-orig">☁${item.origPrice}</span>
+          <span class="deal-sale">☁${item.price}</span>
+          <span class="deal-badge">DEAL</span>
+        </div>
+      </div>`;
+    const b=document.createElement('button');b.textContent='Buy';b.className='b-sun';
+    b.onclick=()=>{
+      if(S.cash<item.price){toast('Not enough SkyCash!');return;}
+      S.cash-=item.price;
+      if(isFood)S.pantry[item.id]=(S.pantry[item.id]||0)+1;
+      else S.furn[item.id]=(S.furn[item.id]||0)+1;
+      toast('Deal snagged: '+item.nm+'! 🎉');render();
+    };
+    d.appendChild(b);g.appendChild(d);
+  });
+  const t=$('dealTimer');if(t){
+    function tickTimer(){
+      const now=new Date();const midnight=new Date();
+      midnight.setHours(24,0,0,0);const ms=midnight-now;
+      const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+      t.textContent='Resets in '+h+'h '+m+'m '+s+'s';
+    }
+    tickTimer();setInterval(tickTimer,1000);
+  }
+}
+
+/* ===== WEATHER WINDOW ===== */
+(function(){
+  const win=document.querySelector('.window');if(!win)return;
+  function clearWeather(){win.className='window';while(win.firstChild)win.removeChild(win.firstChild);}
+  function makeDrops(n,cls){for(let i=0;i<n;i++){const el=document.createElement('div');
+    el.className=cls;el.style.left=(Math.random()*100)+'%';
+    el.style.top=(-Math.random()*40)+'%';
+    el.style.animationDuration=(.5+Math.random()*.6)+'s';
+    el.style.animationDelay=(-Math.random()*1.5)+'s';
+    if(cls==='wx-drop'){el.style.height=(6+Math.random()*8)+'px';}
+    win.appendChild(el);}
+  }
+  function setWeather(code){
+    clearWeather();
+    if(code===0){win.classList.add('wx-clear');const s=document.createElement('div');s.className='wx-sun';s.textContent='☀️';win.appendChild(s);}
+    else if(code<=3){win.classList.add('wx-cloudy');const c=document.createElement('div');c.style.cssText='position:absolute;top:4px;left:4px;font-size:.9rem;opacity:.6';c.textContent='⛅';win.appendChild(c);}
+    else if(code>=45&&code<=48){win.classList.add('wx-cloudy');const c=document.createElement('div');c.style.cssText='position:absolute;top:4px;left:4px;font-size:.9rem;opacity:.4';c.textContent='🌫️';win.appendChild(c);}
+    else if(code>=51&&code<=69||code>=80&&code<=82){win.classList.add('wx-rain');makeDrops(10,'wx-drop');}
+    else if(code>=70&&code<=79){win.classList.add('wx-snow');makeDrops(10,'wx-flake');}
+    else if(code>=95){win.classList.add('wx-storm');makeDrops(6,'wx-drop');const b=document.createElement('div');b.className='wx-bolt';b.style.cssText='position:absolute;top:2px;right:4px;font-size:.9rem';b.textContent='⚡';win.appendChild(b);}
+    else{win.classList.add('wx-cloudy');}
+  }
+  async function fetchWeather(){
+    try{
+      const loc=await fetch('https://ipapi.co/json/').then(r=>r.json());
+      const w=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+loc.latitude+'&longitude='+loc.longitude+'&current_weather=true').then(r=>r.json());
+      setWeather(w.current_weather.weathercode);
+    }catch(e){
+      const h=new Date().getHours();
+      setWeather(h>6&&h<19?0:1);
+    }
+  }
+  fetchWeather();
+  setInterval(fetchWeather,30*60*1000); // refresh every 30 min
+})();
+
+/* ===== NOAH COMPANION PET ===== */
+function renderNoahPet(){
+  const np=$('noahPet');if(!np)return;
+  const nId=S.noahPetId||'bear';
+  if(!SPRITES[nId])return;
+  np.innerHTML='<div class="walker"><img class="rp-sprite" src="data:image/svg+xml,'+encodeURIComponent(SPRITES[nId])+'"></div>';
+}
+/* Hook Noah pet into room tab open */
+(function(){
+  const origTabClick=document.querySelectorAll('.tab');
+  origTabClick.forEach(t=>{const orig=t.onclick;t.onclick=function(e){if(orig)orig.call(this,e);
+    if(t.dataset.tab==='room')renderNoahPet();};});
+  if(S.adopted)renderNoahPet();
+})();
+/* Occasionally float hearts between pets in the room */
+setInterval(()=>{
+  const rp=$('roomPet');const np=$('noahPet');const room=$('room');
+  if(!rp||!np||!room)return;
+  const rpX=parseFloat(rp.style.left)||50;const npX=room.clientWidth-80;
+  if(Math.abs(rpX-npX)<90){
+    const h=document.createElement('span');h.className='noah-heart';h.textContent='💕';
+    h.style.left=(Math.min(rpX,npX)+Math.random()*40)+'px';
+    h.style.bottom='60px';room.appendChild(h);
+    setTimeout(()=>h.remove(),1700);
+  }
+},7000);
+
+/* ===== PET RACING ===== */
+(function(){
+  let p1=0,rival=0,running=false,raceTimer=null,timeLeft=10;
+  const P1=$('raceP1'),P2=$('raceP2'),MSG=$('raceMsg'),TIME=$('raceTime'),
+        TAP=$('raceTap'),START=$('raceStart');
+  if(!P1||!P2)return;
+  function updatePositions(){
+    P1.style.left=Math.min(90,p1)+'%';P2.style.left=Math.min(90,rival)+'%';
+  }
+  START.onclick=()=>{
+    p1=0;rival=0;timeLeft=10;running=true;
+    TAP.disabled=false;START.disabled=true;MSG.textContent='Go!';
+    TIME.textContent=10;updatePositions();
+    const name=S.pet||'cat';
+    P1.textContent=({cat:'🐱',dog:'🐶',bunny:'🐰',fox:'🦊',panda:'🐼',penguin:'🐧',unicorn:'🦄',frog:'🐸',bear:'🐻',manatee:'🐾'}[name]||'🐾');
+    raceTimer=setInterval(()=>{
+      timeLeft--;TIME.textContent=timeLeft;
+      rival+=8+Math.random()*4;
+      updatePositions();
+      if(rival>=90&&running){endRace();return;}
+      if(timeLeft<=0&&running)endRace();
+    },1000);
+  };
+  TAP.onclick=()=>{if(!running)return;p1+=5;updatePositions();if(p1>=90&&running)endRace();};
+  function endRace(){
+    clearInterval(raceTimer);running=false;TAP.disabled=true;START.disabled=false;
+    const won=p1>=rival;const prize=won?30:12;
+    S.cash+=prize;S.happy=clamp(S.happy+12);
+    gainXP&&gainXP(won?45:18);S.gameWins=(S.gameWins||0)+(won?1:0);
+    MSG.textContent=won?'🏆 You won! +'+prize+' ☁':'🥈 So close! +'+prize+' ☁';
+    render();checkAchievements&&checkAchievements();
+    toast(won?S.name+' wins the race! 🏆':'Almost! Keep practising 🏁');
+  }
+})();
+
+/* ===== FISHING ===== */
+(function(){
+  const POND=$('fishPond'),LINE=$('fishLine'),HOOK=$('fishHook'),
+        MOB=$('fishMob'),CATCH=$('fishCatch'),MSG=$('fishMsg'),
+        REEL=$('fishReel'),CAST=$('fishCast');
+  if(!POND||!LINE||!HOOK)return;
+  const FISH=['🐟','🐠','🐡','🦈','🦑','🦐'];
+  const PRIZES=[
+    {msg:'Tiny fish! +10 ☁',fn:()=>{S.cash+=10;S.pantry['fish']=(S.pantry['fish']||0)+1;}},
+    {msg:'Beautiful catch! +20 ☁',fn:()=>{S.cash+=20;S.pantry['sushi']=(S.pantry['sushi']||0)+1;}},
+    {msg:'Big haul! +30 ☁',fn:()=>{S.cash+=30;S.pantry['fish']=(S.pantry['fish']||0)+2;}},
+    {msg:'Nothing… +5 ☁',fn:()=>{S.cash+=5;}},
+  ];
+  let state='idle',nibbleTimer=null,reelWindow=null;
+  function reset(){state='idle';LINE.style.height='0';HOOK.className='fish-hook';HOOK.style.top='8px';
+    MOB.className='fish-mob';CATCH.style.display='none';REEL.disabled=true;CAST.disabled=false;
+    MSG.textContent='Cast your line to begin!';}
+  CAST.onclick=()=>{
+    if(state!=='idle')return;
+    state='waiting';CAST.disabled=true;REEL.disabled=true;
+    LINE.style.height='80px';HOOK.classList.add('cast');
+    const fishId=FISH[Math.floor(Math.random()*FISH.length)];
+    MOB.textContent=fishId;MOB.className='fish-mob swim';
+    MSG.textContent='Waiting for a bite…';
+    const wait=2500+Math.random()*5000;
+    nibbleTimer=setTimeout(()=>{
+      if(state!=='waiting')return;
+      state='nibbling';HOOK.classList.add('nibble');MOB.className='fish-mob';
+      MSG.textContent='🐟 NIBBLE! Reel in NOW!';REEL.disabled=false;
+      reelWindow=setTimeout(()=>{if(state==='nibbling'){state='idle';MSG.textContent='Too slow! The fish got away.';
+        toast('It got away! Try again.');setTimeout(reset,1800);}},1500);
+    },wait);
+  };
+  REEL.onclick=()=>{
+    if(state!=='nibbling')return;
+    clearTimeout(reelWindow);state='idle';
+    const prize=PRIZES[Math.floor(Math.random()*PRIZES.length)];
+    const fishId=FISH[Math.floor(Math.random()*FISH.length)];
+    CATCH.textContent=fishId;CATCH.style.display='block';
+    HOOK.className='fish-hook cast';LINE.style.height='30px';
+    MOB.className='fish-mob';MSG.textContent=prize.msg;
+    prize.fn();S.happy=clamp(S.happy+10);gainXP&&gainXP(30);
+    render();checkAchievements&&checkAchievements();
+    toast('Caught a '+fishId+'! '+prize.msg);
+    setTimeout(reset,2000);
+  };
+  POND.onclick=e=>{if(state==='nibbling'&&e.target!==REEL)REEL.click();};
+  reset();
+})();
+
+/* Hook wallpaper + daily deals into shop build */
+const _wpBuild=buildShop;
+buildShop=function(){_wpBuild();buildWallpaperShop();buildDailyDeals();};
+if(S.adopted){buildWallpaperShop();buildDailyDeals();}
+
+/* Update love letter greeting */
+(function(){const ln=$('letterName');if(ln&&S.userName)ln.textContent=S.userName;})();
+/* Re-set on load (in case render is called after) */
+const _luRender=render;
+render=function(){_luRender();const ln=$('letterName');if(ln&&S.userName)ln.textContent=S.userName;};
 
 </script>
 </body>
