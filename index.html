@@ -389,6 +389,15 @@
   /* Float-heart: hardware-accelerated */
   .float-heart{will-change:transform,opacity;}
 
+  /* Mood visuals */
+  #petHolder.mood-happy{filter:drop-shadow(0 0 10px rgba(255,200,60,0.6));}
+  #petHolder.mood-tired{filter:brightness(0.86) saturate(0.7);}
+  #petHolder.mood-hungry{filter:drop-shadow(0 0 9px rgba(255,80,50,0.45));}
+  .mood-icon{position:absolute;bottom:4px;right:4px;font-size:1.4rem;z-index:6;pointer-events:none;transition:opacity .3s;}
+
+  /* Day/night room overlay */
+  .room-night-overlay{position:absolute;inset:0;pointer-events:none;z-index:4;border-radius:inherit;overflow:hidden;transition:background .9s;}
+
 </style>
 </head>
 <body>
@@ -431,6 +440,7 @@
       <div class="card">
         <div class="stage">
           <div class="pet-holder" id="petHolder" title="Tap to pet!"></div>
+          <span id="moodIcon" class="mood-icon"></span>
           <div class="pet-name" id="petName"></div>
           <span class="mood" id="mood">feeling good</span>
           <div class="switch-row"><button id="switchPetBtn" class="switch-btn">🐾 Switch Pet</button></div>
@@ -617,6 +627,7 @@
         <div class="room" id="room">
           <div class="wallsun"></div><div class="window"></div>
           <div class="room-baseboard"></div>
+          <div id="roomNightOverlay" class="room-night-overlay"></div>
           <div class="room-pet" id="roomPet"></div>
           <div class="floor-items" id="floorItems"></div>
           <div class="hint" id="roomHint">your room is empty</div>
@@ -663,6 +674,34 @@
       <button id="adoptConfirm2" class="b-sun">Bring home</button>
       <button id="closeAdoptModal" class="backbtn">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- Love letter modal -->
+<div class="modal-bg" id="letterModal">
+  <div class="modal-card" style="max-width:380px;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:6px">💌</div>
+    <h2>A letter from Noah</h2>
+    <p style="font-family:'Nunito';line-height:1.8;margin:14px 0 22px;color:var(--ink);font-size:.97rem">
+      Hey Sky ☁<br><br>
+      I made this whole little world just for you.
+      Take good care of your pet — feed them, play with them,
+      make their room cozy.<br><br>
+      Every time you open this, I'm thinking of you. 🌸<br><br>
+      Love always,<br>
+      <strong style="font-family:'Baloo 2',cursive;font-size:1.15rem;color:var(--sky-deep)">Noah</strong>
+    </p>
+    <button id="letterCloseBtn" class="b-sun" style="width:100%;font-size:1rem;padding:14px">💛 Open my world</button>
+  </div>
+</div>
+
+<!-- Daily gift modal -->
+<div class="modal-bg" id="giftModal">
+  <div class="modal-card" style="max-width:340px;text-align:center;">
+    <div id="giftEmoji" style="font-size:3.5rem;margin-bottom:8px">🎁</div>
+    <h2>Daily Gift!</h2>
+    <p id="giftMsg" style="font-family:'Nunito';margin:10px 0 22px;color:var(--muted);font-size:.95rem">Noah left something special for you today.</p>
+    <button id="giftCloseBtn" class="b-sun" style="width:100%;font-size:1rem;padding:14px">Thank you Noah! 💛</button>
   </div>
 </div>
 
@@ -1769,7 +1808,6 @@ render = function() {
 /* On load: try to restore a saved game */
 (function() {
   if (loadGame() && S.adopted) {
-    // hide adopt screen, show game
     const aw = $('adoptWrap');
     const gm = $('game');
     if (aw) aw.classList.add('hidden');
@@ -1781,6 +1819,103 @@ render = function() {
     toast('Welcome back, ' + S.name + '! ☁');
   }
 })();
+
+/* ===== LOVE LETTER ===== */
+(function(){
+  const KEY='skz_letter_v1';
+  const m=$('letterModal');if(!m)return;
+  if(!localStorage.getItem(KEY)){
+    m.classList.add('show');
+    $('letterCloseBtn').onclick=()=>{
+      m.classList.remove('show');
+      localStorage.setItem(KEY,'1');
+      setTimeout(checkDailyGift,400);
+    };
+  } else {
+    setTimeout(checkDailyGift,600);
+  }
+})();
+
+/* ===== DAILY GIFT FROM NOAH ===== */
+const DAILY_GIFTS=[
+  {emoji:'🍰',msg:'Noah baked you a Cake today! Enjoy 🍰',fn:()=>{S.pantry['cake']=(S.pantry['cake']||0)+1;}},
+  {emoji:'🍣',msg:'Noah brought you Sushi! So fancy 🍣',fn:()=>{S.pantry['sushi']=(S.pantry['sushi']||0)+1;}},
+  {emoji:'🐟',msg:'Noah caught a fresh Fish for you! 🐟',fn:()=>{S.pantry['fish']=(S.pantry['fish']||0)+1;}},
+  {emoji:'🍕',msg:'Noah ordered you a Pizza! 🍕',fn:()=>{S.pantry['pizza']=(S.pantry['pizza']||0)+1;}},
+  {emoji:'🫐',msg:'Noah picked Berries for you today 🫐',fn:()=>{S.pantry['berry']=(S.pantry['berry']||0)+2;}},
+  {emoji:'⭐',msg:'Noah sent you 25 SkyCash! ☁',fn:()=>{S.cash+=25;}},
+  {emoji:'💛',msg:'Noah sent 20 SkyCash with love 💛',fn:()=>{S.cash+=20;}},
+];
+function checkDailyGift(){
+  if(!S.adopted)return;
+  const today=new Date().toDateString();
+  if(localStorage.getItem('skz_daily')===today)return;
+  const g=DAILY_GIFTS[Math.floor(Math.random()*DAILY_GIFTS.length)];
+  const m=$('giftModal');if(!m)return;
+  $('giftEmoji').textContent=g.emoji;
+  $('giftMsg').textContent=g.msg;
+  m.classList.add('show');
+  $('giftCloseBtn').onclick=()=>{
+    m.classList.remove('show');
+    g.fn();
+    localStorage.setItem('skz_daily',today);
+    render();
+    toast('Daily gift received! 🎁');
+  };
+}
+
+/* ===== PET MOOD VISUALS ===== */
+function updateMoodVisuals(){
+  const p=$('petHolder');const ic=$('moodIcon');if(!p)return;
+  const avg=(S.hunger+S.happy+S.energy)/3;
+  p.classList.remove('mood-happy','mood-tired','mood-hungry');
+  if(ic)ic.textContent='';
+  if(S.energy<25){p.classList.add('mood-tired');if(ic)ic.textContent='💤';}
+  else if(S.hunger<25){p.classList.add('mood-hungry');if(ic)ic.textContent='🍴';}
+  else if(avg>82){p.classList.add('mood-happy');if(ic)ic.textContent='❤️';}
+}
+
+/* Mood particle ticker — emits floating emoji based on pet state */
+setInterval(()=>{
+  if(!S.adopted)return;
+  const tabHome=$('tab-home');if(!tabHome||tabHome.classList.contains('hidden'))return;
+  const avg=(S.hunger+S.happy+S.energy)/3;
+  const pool=S.energy<25?['💤','😴','💤']:
+             S.hunger<25?['🍴','😢','🍽️']:
+             avg>82?['❤️','💕','✨']:null;
+  if(!pool)return;
+  for(let i=0;i<2;i++){
+    const sp=document.createElement('span');sp.className='float-heart';
+    sp.textContent=pool[Math.floor(Math.random()*pool.length)];
+    sp.style.left=(18+Math.random()*64)+'%';sp.style.top=(10+Math.random()*30)+'%';
+    sp.style.animationDelay=(i*0.15)+'s';sp.style.fontSize=(0.85+Math.random()*0.35)+'rem';
+    const ph=$('petHolder');if(ph)ph.parentElement.appendChild(sp);
+    setTimeout(()=>sp.remove(),1100+i*120);
+  }
+},3800);
+
+/* ===== DAY / NIGHT ROOM LIGHTING ===== */
+function applyDayNight(){
+  const ov=$('roomNightOverlay');if(!ov)return;
+  const h=new Date().getHours();
+  let bg,icon;
+  if(h>=6&&h<10){bg='rgba(255,235,150,0.08)';icon='☀️';}
+  else if(h>=10&&h<17){bg='rgba(0,0,0,0)';icon='☀️';}
+  else if(h>=17&&h<20){bg='rgba(255,160,70,0.14)';icon='🌆';}
+  else if(h>=20&&h<22){bg='rgba(80,40,120,0.22)';icon='🌇';}
+  else{bg='rgba(18,28,72,0.46)';icon='🌙';}
+  ov.style.background=bg;
+  const stars=h<6||h>=22
+    ?['⭐','✨','⭐','✨','⭐'].map(s=>`<span style="position:absolute;left:${8+Math.random()*75}%;top:${4+Math.random()*42}%;font-size:${0.45+Math.random()*0.35}rem;opacity:${0.45+Math.random()*0.4}">${s}</span>`).join('')
+    :'';
+  ov.innerHTML=`<span style="position:absolute;right:9%;top:7%;font-size:1.4rem;opacity:.75">${icon}</span>${stars}`;
+}
+setInterval(applyDayNight,60000);
+applyDayNight();
+
+/* Hook mood visuals into render (after all other render hooks) */
+const _moodRender=render;
+render=function(){_moodRender();updateMoodVisuals();};
 
 </script>
 </body>
