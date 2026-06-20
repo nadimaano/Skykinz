@@ -369,6 +369,58 @@
   .fish-catch{position:absolute;left:50%;top:20px;transform:translateX(-50%);font-size:2rem;
     display:none;animation:catch_pop .5s ease-out;}
 
+  /* ── Game result overlay ── */
+  .game-result{position:fixed;inset:0;z-index:1200;background:rgba(60,30,100,.65);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .28s;}
+  .game-result.show{opacity:1;pointer-events:auto;}
+  .gr-card{background:#fff;border-radius:26px;padding:32px 28px 28px;max-width:330px;width:92%;
+    text-align:center;transform:scale(.82) translateY(20px);
+    transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+    box-shadow:0 16px 48px rgba(0,0,0,.22);}
+  .game-result.show .gr-card{transform:scale(1) translateY(0);}
+  .gr-emoji{font-size:3.6rem;margin-bottom:6px;display:block;}
+  .gr-h{font-family:'Baloo 2',cursive;font-size:1.45rem;margin:0 0 6px;color:var(--sky-deep);}
+  .gr-score-big{font-family:'Baloo 2',cursive;font-size:2.2rem;font-weight:900;
+    color:var(--grape);margin:4px 0 2px;min-height:1.2em;}
+  .gr-sub{font-size:.85rem;color:var(--muted);margin:4px 0 20px;}
+
+  /* ── Reaction game ── */
+  #reactionStage{border-radius:16px;min-height:128px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:6px;font-size:1.3rem;font-weight:700;
+    cursor:pointer;user-select:none;margin:14px 0;
+    transition:background .18s,color .18s,transform .1s;}
+  #reactionStage.waiting{background:#e84040;color:#fff;}
+  #reactionStage.go{background:#27c47a;color:#fff;}
+  #reactionStage.too-early{background:#c00;color:#fff;animation:shake_x .35s ease;}
+  #reactionStage.result{background:#f0e8ff;color:var(--grape);}
+  #reactionStage.idle{background:#f5f3ff;color:var(--muted);}
+  .react-ms{font-size:2.6rem;font-weight:900;font-family:'Baloo 2',cursive;line-height:1;}
+  .react-grade{font-size:.95rem;margin-top:2px;}
+  @keyframes shake_x{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+
+  /* ── Rhythm hit/miss popups ── */
+  .rhy-pop{position:absolute;font-family:'Baloo 2',cursive;font-size:1rem;font-weight:800;
+    pointer-events:none;animation:rhy_pop .5s ease-out forwards;z-index:10;}
+  @keyframes rhy_pop{0%{opacity:1;transform:translateY(0) scale(1)}
+    100%{opacity:0;transform:translateY(-36px) scale(1.25)}}
+  #rhythmKeys button{transition:transform .07s,filter .07s,box-shadow .07s;}
+  #rhythmKeys button.rk-hit{filter:brightness(1.7);transform:scale(.88);
+    box-shadow:0 0 14px rgba(255,255,255,.6);}
+
+  /* ── Perfect Bite feedback ── */
+  #biteZone{transition:background .18s,left .22s ease-out,width .22s ease-out;}
+  #biteZone.zone-hit{background:rgba(39,196,122,.55)!important;}
+  #biteZone.zone-miss{background:rgba(232,64,64,.45)!important;}
+  #biteMarker{transition:none;}
+  .bite-pop{position:absolute;top:-2px;font-family:'Baloo 2',cursive;font-size:.95rem;
+    font-weight:800;pointer-events:none;animation:rhy_pop .55s ease-out forwards;
+    transform:translateX(-50%);}
+  #biteTrack{position:relative;overflow:visible;}
+
+  /* ── Race smooth ── */
+  .race-runner{transition:left .05s linear;}
+
   /* Profile selection screen */
   .profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;margin-top:14px;}
   .profile-card{background:#f5f8ff;border:2px solid var(--line);border-radius:20px;padding:16px 10px 12px;
@@ -799,6 +851,20 @@
         </div>
       </div>
     </section>
+
+    <!-- GAME RESULT OVERLAY (shared by all arcade games) -->
+    <div class="game-result" id="gameResult">
+      <div class="gr-card">
+        <div class="gr-emoji" id="grEmoji">🎉</div>
+        <h2 class="gr-h" id="grTitle">Game Over!</h2>
+        <div class="gr-score-big" id="grScore"></div>
+        <p class="gr-sub" id="grPrize"></p>
+        <div class="btn-row center" style="gap:10px">
+          <button id="grReplay" class="b-sun" style="flex:1">▶ Play Again</button>
+          <button id="grBack" class="backbtn" style="flex:1">← Arcade</button>
+        </div>
+      </div>
+    </div>
 
     <!-- SHOP -->
     <section id="tab-shop" class="hidden">
@@ -1354,9 +1420,22 @@ function buildGameHub(){const el=$('gamePick');if(!el)return;el.innerHTML='';
 function openGame(id){$('gameHub').classList.add('hidden');
   GAMES.forEach(g=>$('g-'+g.id).classList.add('hidden'));
   $('g-'+id).classList.remove('hidden');}
-function closeGame(){stopAllGames();$('gameHub').classList.remove('hidden');
-  GAMES.forEach(g=>$('g-'+g.id).classList.add('hidden'));}
+function closeGame(){stopAllGames();const gr=$('gameResult');if(gr)gr.classList.remove('show');
+  $('gameHub').classList.remove('hidden');GAMES.forEach(g=>$('g-'+g.id).classList.add('hidden'));}
 function reward(n,msg){S.cash+=n;S.happy=clamp(S.happy+8);if(n>S.best&&typeof n==='number'){}render();toast(msg+' +'+n+' ☁');}
+function showGameResult(emoji,title,scoreText,cashPrize,onReplay){
+  S.cash+=(cashPrize||0);S.happy=clamp((S.happy||72)+8);
+  gainXP&&gainXP(cashPrize||0);render();checkAchievements&&checkAchievements();
+  const el=$('gameResult');
+  if(!el){toast(title+' +'+(cashPrize||0)+' ☁');return;}
+  $('grEmoji').textContent=emoji||'🎉';
+  $('grTitle').textContent=title||'Game Over!';
+  $('grScore').textContent=scoreText||'';
+  $('grPrize').textContent='+'+(cashPrize||0)+' ☁ SkyCash';
+  $('grReplay').onclick=()=>{el.classList.remove('show');if(onReplay)setTimeout(onReplay,120);};
+  $('grBack').onclick=()=>{el.classList.remove('show');closeGame();};
+  el.classList.add('show');
+}
 
 let timers=[];
 function T(fn,ms){const id=setInterval(fn,ms);timers.push(id);return id;}
@@ -1387,7 +1466,9 @@ $('startGameBtn').onclick=function(){if(catchRunning)return;catchRunning=true;
     else if(d.y>area.clientHeight){d.el.remove();drops.splice(i,1);}}},30);
   T(()=>{time--;$('gTime').textContent=time;if(time<=0){stopAllGames();
     drops.forEach(d=>d.el.remove());area.onmousemove=null;area.ontouchmove=null;
-    if(score>S.best)S.best=score;reward(score,'Game over!');}},1000);
+    if(score>S.best)S.best=score;
+    showGameResult('⭐','Cloud Catcher','Score: '+score+(score>0&&score===S.best?' 🏆 New best!':''),
+      score,()=>$('startGameBtn').click());}},1000);
 };
 
 /* ---------- 2. Memory Match ---------- */
@@ -1407,7 +1488,8 @@ function startMemory(){stopAllGames();
       else{moves++;$('memMoves').textContent=moves;
         if(first.dataset.face===card.dataset.face){
           first.classList.add('done');card.classList.add('done');pairs++;$('memPairs').textContent=pairs;first=null;
-          if(pairs===8){const bonus=Math.max(10,60-moves*2);setTimeout(()=>reward(bonus,'Solved in '+moves+' moves!'),300);}
+          if(pairs===8){const bonus=Math.max(10,60-moves*2);
+            setTimeout(()=>showGameResult('🃏','Memory Match!','Matched all pairs in '+moves+' moves',bonus,startMemory),350);}
         }else{lock=true;const a=first,b=card;setTimeout(()=>{a.classList.remove('flip');b.classList.remove('flip');first=null;lock=false;},700);}
       }};
     grid.appendChild(card);});
@@ -1429,7 +1511,8 @@ function startWhack(){stopAllGames();
   T(()=>{holes.forEach(h=>{if(Math.random()<0.25&&!h.classList.contains('up'))h.classList.add('up');});
     setTimeout(()=>holes.forEach(h=>{if(Math.random()<0.5)h.classList.remove('up');}),600);},800);
   T(()=>{time--;$('whackTime').textContent=time;if(time<=0){stopAllGames();
-    holes.forEach(h=>h.classList.remove('up'));reward(score,'Time! You popped '+score+'.');}},1000);
+    holes.forEach(h=>h.classList.remove('up'));
+    showGameResult('🔨','Pop-a-Pal!','You popped '+score+' pets!',score,startWhack);}},1000);
 }
 
 /* ---------- 5. Star Maze ---------- */
@@ -1840,16 +1923,24 @@ render=function(){syncActivePet();_v5render();};
     if(running||notes.length)raf=requestAnimationFrame(loop);
     else running=false;
   }
+  function rhyPop(lane,text,good){
+    const pop=document.createElement('div');pop.className='rhy-pop';
+    pop.textContent=text;pop.style.color=good?'#27c47a':'#e84040';
+    pop.style.left=(lane*25+6)+'%';pop.style.bottom='68px';
+    stage().appendChild(pop);setTimeout(()=>pop.remove(),520);}
   $('rhythmKeys').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!running)return;
     const lane=+b.dataset.lane;const h=hitLaneY();
-    // find closest note in lane near hit line
     let best=-1,bestd=999;notes.forEach((n,idx)=>{if(n.lane===lane){const d=Math.abs(n.y-h);if(d<bestd){bestd=d;best=idx;}}});
-    if(best>=0&&bestd<46){const pts=bestd<18?3:1;score+=pts;combo++;$('rhyScore').textContent=score;$('rhyCombo').textContent=combo;
-      notes[best].el.remove();notes.splice(best,1);b.style.transform='scale(.9)';setTimeout(()=>b.style.transform='',90);}
-    else{combo=0;$('rhyCombo').textContent=0;}});
+    if(best>=0&&bestd<46){const pts=bestd<18?3:1;score+=pts;combo++;
+      $('rhyScore').textContent=score;$('rhyCombo').textContent=combo;
+      notes[best].el.remove();notes.splice(best,1);
+      b.classList.add('rk-hit');setTimeout(()=>b.classList.remove('rk-hit'),90);
+      rhyPop(lane,pts===3?'GREAT!':'OK!',true);}
+    else{combo=0;$('rhyCombo').textContent=0;rhyPop(lane,'MISS',false);}});
   $('rhyStart').onclick=()=>{stopAllGames();start();};
   registerGameStop(()=>{running=false;clearInterval(spawnT);if(raf)cancelAnimationFrame(raf);
-    if(score>0)setTimeout(()=>reward(score,'Nice rhythm!'),50);notes=[];});
+    if(score>0)setTimeout(()=>showGameResult('🎵','Sky Beats','Score: '+score+' · Combo peak: '+combo,score,()=>$('rhyStart').click()),100);
+    notes=[];score=0;combo=0;});
 })();
 
 /* ---------- Echo Lights (simon) ---------- */
@@ -1869,7 +1960,9 @@ render=function(){syncActivePet();_v5render();};
       if(round>(S.simonBest||0)){S.simonBest=round;$('simonBest').textContent=round;}
       next();}}
     else{accepting=false;playing=false;const r=round*5;
-      toast('Oops! Reached round '+round);if(r>0)setTimeout(()=>reward(r,'Echo Lights!'),50);}});
+      pad.querySelectorAll('.simon-btn').forEach(b=>b.classList.add('lit'));
+      setTimeout(()=>{pad.querySelectorAll('.simon-btn').forEach(b=>b.classList.remove('lit'));
+        showGameResult('🌈','Echo Lights','Reached round '+round,r,()=>$('simonStart').click());},500);}});
   $('simonStart').onclick=()=>{stopAllGames();$('simonBest').textContent=S.simonBest||0;start();};
   registerGameStop(()=>{playing=false;accepting=false;seq=[];if(seqIv){clearInterval(seqIv);seqIv=null;}});
 })();
@@ -1893,8 +1986,8 @@ render=function(){syncActivePet();_v5render();};
     if(cells.length<2){toast('Need 2+ touching!');return;}
     cells.forEach(([rr,cc])=>grid[rr][cc]=-1);score+=cells.length*(cells.length-1);$('bubScore').textContent=score;
     collapse();draw();
-    if(grid.flat().every(x=>x<0)){setTimeout(()=>reward(score+30,'Board cleared!'),100);}
-    else if(!hasMoves()){setTimeout(()=>reward(score,'No moves left!'),100);}}
+    if(grid.flat().every(x=>x<0)){setTimeout(()=>showGameResult('🫧','Board Cleared!','Perfect clear! Score: '+( score+30),score+30,()=>$('bubStart').click()),100);}
+    else if(!hasMoves()){setTimeout(()=>showGameResult('🫧','Bubble Pop','No moves left. Score: '+score,score,()=>$('bubStart').click()),100);}}
   function collapse(){
     for(let c=0;c<COLS;c++){let col=[];for(let r=ROWS-1;r>=0;r--)if(grid[r][c]>=0)col.push(grid[r][c]);
       for(let r=ROWS-1;r>=0;r--)grid[r][c]=col[ROWS-1-r]!==undefined?col[ROWS-1-r]:-1;}
@@ -1928,9 +2021,14 @@ render=function(){syncActivePet();_v5render();};
     let m=find('⭐');if(m<0)m=find('🐾');if(m<0&&!board[4])m=4;
     if(m<0){const free=board.map((v,i)=>v?-1:i).filter(i=>i>=0);m=free[Math.floor(Math.random()*free.length)];}
     board[m]='⭐';}
-  function end(w){over=true;if(w==='🐾'){$('tttMsg').textContent='You win! 🎉';reward(25,'You won!');}
-    else if(w==='⭐'){$('tttMsg').textContent=activePet().name+' wins!';reward(5,'Good game!');}
-    else{$('tttMsg').textContent="It's a tie!";reward(10,'A tie!');}}
+  function end(w){over=true;
+    const petName=(typeof activePet==='function'&&activePet()&&activePet().name)||'your pet';
+    if(w==='🐾'){$('tttMsg').textContent='You win! 🎉';
+      setTimeout(()=>showGameResult('🏆','You Win!','Tic-Tac-Paw champion!',25,()=>$('tttStart').click()),350);}
+    else if(w==='⭐'){$('tttMsg').textContent=petName+' wins!';
+      setTimeout(()=>showGameResult('😅',''+petName+' Wins!','Better luck next game…',5,()=>$('tttStart').click()),350);}
+    else{$('tttMsg').textContent="It's a tie!";
+      setTimeout(()=>showGameResult('🤝',"It's a Tie!",'So evenly matched!',10,()=>$('tttStart').click()),350);}}
   $('tttStart').onclick=()=>{stopAllGames();start();};
   registerGameStop(()=>{});
 })();
@@ -1938,16 +2036,33 @@ render=function(){syncActivePet();_v5render();};
 /* ---------- Quick Paw (reaction) ---------- */
 (function(){
   const st=$('reactionStage');let state='idle',t0=0,to=null;
-  function start(){state='waiting';st.className='waiting';st.textContent='Wait for green…';
-    to=setTimeout(()=>{state='go';st.className='go';st.textContent='TAP NOW!';t0=performance.now();},900+Math.random()*2600);}
-  st.onclick=()=>{
-    if(state==='waiting'){clearTimeout(to);state='idle';st.className='';st.textContent='Too early! Tap Start to retry';}
-    else if(state==='go'){const ms=Math.round(performance.now()-t0);state='idle';st.className='';
-      st.textContent=ms+' ms!';const best=S.reactBest||9999;if(ms<best){S.reactBest=ms;$('reactBest').textContent=ms+' ms';}
-      const pts=Math.max(3,Math.round((600-Math.min(ms,600))/20));reward(pts,ms+' ms!');}
-  };
+  function setStage(cls,html){st.className=cls;st.innerHTML=html;}
+  function idle(){state='idle';setStage('idle','<span>Tap Start to play ⚡</span>');}
+  function start(){
+    state='waiting';
+    setStage('waiting','<span style="font-size:1.6rem">🔴</span><span>Wait for green…</span>');
+    const delay=1000+Math.random()*3000;
+    to=setTimeout(()=>{state='go';t0=performance.now();
+      setStage('go','<span style="font-size:1.6rem">🟢</span><span>TAP NOW!</span>');},delay);
+  }
+  st.addEventListener('click',()=>{
+    if(state==='waiting'){
+      clearTimeout(to);state='idle';
+      setStage('too-early','<span style="font-size:1.6rem">❌</span><span>TOO EARLY!</span>');
+      setTimeout(idle,1100);
+    } else if(state==='go'){
+      const ms=Math.round(performance.now()-t0);state='idle';
+      const best=S.reactBest||9999;const isNew=ms<best;
+      if(isNew){S.reactBest=ms;$('reactBest').textContent=ms+' ms';}
+      const grade=ms<180?'⚡ Lightning!':ms<280?'🌟 Blazing!':ms<380?'✅ Sharp!':ms<500?'👍 Good':'🐌 Keep going';
+      const pts=Math.max(3,Math.round((600-Math.min(ms,600))/20));
+      setStage('result',`<span class="react-ms">${ms}<small style="font-size:.9rem">ms</small></span><span class="react-grade">${grade}${isNew?' 🏆 Best!':''}</span>`);
+      setTimeout(()=>showGameResult('⚡',grade,'Your time: '+ms+' ms'+(isNew?' — New best!':''),pts,start),900);
+    }
+  });
   $('reactStart').onclick=()=>{stopAllGames();$('reactBest').textContent=(S.reactBest?S.reactBest+' ms':'—');start();};
-  registerGameStop(()=>{clearTimeout(to);state='idle';st.className='';st.textContent='Tap to begin';});
+  registerGameStop(()=>{clearTimeout(to);idle();});
+  idle();
 })();
 
 /* ---------- Slidey Pic (15-puzzle) ---------- */
@@ -1959,7 +2074,8 @@ render=function(){syncActivePet();_v5render();};
   function move(i){const b=tiles.indexOf(0);const r=Math.floor(i/4),c=i%4,br=Math.floor(b/4),bc=b%4;
     if((Math.abs(r-br)===1&&c===bc)||(Math.abs(c-bc)===1&&r===br)){
       [tiles[i],tiles[b]]=[tiles[b],tiles[i]];moves++;$('slideMoves').textContent=moves;draw();
-      if(solved()){const pts=Math.max(15,80-moves);setTimeout(()=>reward(pts,'Solved in '+moves+'!'),100);}}}
+      if(solved()){const pts=Math.max(15,80-moves);
+        setTimeout(()=>showGameResult('🧩','Slidey Pic Solved!','Completed in '+moves+' moves',pts,()=>$('slideStart').click()),150);}}}
   function shuffle(){tiles=[...Array(15)].map((_,i)=>i+1).concat(0);
     // do random legal moves to guarantee solvable
     for(let k=0;k<200;k++){const b=tiles.indexOf(0);const nb=[];const br=Math.floor(b/4),bc=b%4;
@@ -1988,7 +2104,7 @@ render=function(){syncActivePet();_v5render();};
   function unpick(p){p.tile.classList.remove('used');picked=picked.filter(x=>x!==p);drawAns();}
   function check(){if(picked.length===answer.length){const guess=picked.map(p=>p.ch).join('');
     if(guess===answer){S.scrSolved=(S.scrSolved||0)+1;$('scrSolved').textContent=S.scrSolved;
-      setTimeout(()=>{reward(15,'Correct! '+answer.toUpperCase());start();},400);}
+      setTimeout(()=>showGameResult('🔤','Correct!',answer.toUpperCase()+' — well done!',15,start),350);}
     else{toast('Not quite — try again');}}}
   $('scrClear').onclick=()=>{document.querySelectorAll('#scrLetters .scr-tile').forEach(t=>t.classList.remove('used'));picked=[];drawAns();};
   $('scrStart').onclick=()=>{stopAllGames();$('scrSolved').textContent=S.scrSolved||0;start();};
@@ -1998,22 +2114,39 @@ render=function(){syncActivePet();_v5render();};
 /* ---------- Perfect Bite (timing) ---------- */
 (function(){
   let raf=null,pos=0,dir=1,bites=0,score=0,running=false,zoneL=0,zoneW=0;
-  const track=()=>$('biteTrack');
-  function newZone(){zoneW=18+Math.random()*16;zoneL=Math.random()*(80-zoneW)+2;
-    $('biteZone').style.left=zoneL+'%';$('biteZone').style.width=zoneW+'%';}
+  function newZone(){zoneW=20+Math.random()*18;zoneL=Math.random()*(76-zoneW)+2;
+    const z=$('biteZone');z.style.left=zoneL+'%';z.style.width=zoneW+'%';
+    z.className=''; // reset flash classes
+  }
   function start(){if(running)return;running=true;bites=0;score=0;pos=0;dir=1;
     $('biteCount').textContent=0;$('biteScore').textContent=0;newZone();loop();}
-  function loop(){pos+=dir*1.3;if(pos>=96){pos=96;dir=-1;}if(pos<=0){pos=0;dir=1;}
+  function loop(){pos+=dir*1.4;if(pos>=96){pos=96;dir=-1;}if(pos<=0){pos=0;dir=1;}
     $('biteMarker').style.left=pos+'%';if(running)raf=requestAnimationFrame(loop);}
-  $('biteFeed').onclick=()=>{if(!running)return;const center=zoneL+zoneW/2;const d=Math.abs(pos-center);
-    let pts=0;if(pos>=zoneL&&pos<=zoneL+zoneW){pts=d<zoneW*0.25?5:3;animPetNom();}else{pts=0;toast('Missed!');}
+  function bitePop(text,good,pct){
+    const el=document.createElement('div');el.className='bite-pop';
+    el.textContent=text;el.style.color=good?'#27c47a':'#e84040';
+    el.style.left=pct+'%';
+    $('biteTrack').appendChild(el);setTimeout(()=>el.remove(),600);}
+  $('biteFeed').onclick=()=>{if(!running)return;
+    const center=zoneL+zoneW/2;const d=Math.abs(pos-center);
+    const z=$('biteZone');
+    let pts=0;
+    if(pos>=zoneL&&pos<=zoneL+zoneW){
+      pts=d<zoneW*0.25?5:3;
+      z.className='zone-hit';
+      bitePop(pts===5?'+5 PERFECT!':'+3 GOOD!',true,pos);
+      setTimeout(()=>z.className='',300);
+    }else{
+      z.className='zone-miss';setTimeout(()=>z.className='',300);
+      bitePop('MISS',false,Math.min(90,Math.max(5,pos)));
+    }
     score+=pts;bites++;$('biteScore').textContent=score;$('biteCount').textContent=bites;
-    if(pts>0)toast(pts===5?'Perfect bite! +5':'Nice! +'+pts);
-    if(bites>=5){running=false;if(raf)cancelAnimationFrame(raf);S.hunger=clamp(S.hunger+15);
-      setTimeout(()=>reward(score,'Mealtime done!'),200);}else newZone();};
-  function animPetNom(){/* visual handled on home; here just toast */}
+    if(bites>=5){running=false;if(raf){cancelAnimationFrame(raf);raf=null;}
+      S.hunger=clamp(S.hunger+15);
+      setTimeout(()=>showGameResult('🍽️','Mealtime!','Score: '+score+' pts from 5 bites',score,()=>$('biteStart').click()),400);}
+    else newZone();};
   $('biteStart').onclick=()=>{stopAllGames();start();};
-  registerGameStop(()=>{running=false;if(raf)cancelAnimationFrame(raf);});
+  registerGameStop(()=>{running=false;if(raf){cancelAnimationFrame(raf);raf=null;}});
 })();
 
 /* rebuild hub to show the new set; ensure family synced */
@@ -2485,38 +2618,62 @@ setInterval(()=>{
 },7000);
 
 /* ===== PET RACING ===== */
+/* ===== PET RACING (RAF rewrite) ===== */
 (function(){
-  let p1=0,rival=0,running=false,raceTimer=null,timeLeft=10;
+  const PET_ICONS={cat:'🐱',dog:'🐶',bunny:'🐰',fox:'🦊',panda:'🐼',penguin:'🐧',unicorn:'🦄',frog:'🐸',bear:'🐻',manatee:'🐾'};
   const P1=$('raceP1'),P2=$('raceP2'),MSG=$('raceMsg'),TIME=$('raceTime'),
         TAP=$('raceTap'),START=$('raceStart');
   if(!P1||!P2)return;
-  function updatePositions(){
-    P1.style.left=Math.min(90,p1)+'%';P2.style.left=Math.min(90,rival)+'%';
+  let p1=0,rival=0,running=false,raceRaf=null,startTs=0,lastTs=0,rivalAcc=0;
+  const RACE_DUR=10000; // ms
+  function pos2pct(v){return Math.min(88,Math.max(0,v)).toFixed(2)+'%';}
+  function draw(){P1.style.left=pos2pct(p1);P2.style.left=pos2pct(rival);}
+  function loop(ts){
+    if(!running)return;
+    if(!startTs){startTs=ts;lastTs=ts;}
+    const elapsed=ts-startTs;
+    const dt=Math.min(ts-lastTs,50);lastTs=ts;
+    // Rival advances smoothly: avg ~88% in 10s = 8.8%/s, with slight wobble
+    rivalAcc+=(8.8+Math.sin(elapsed*0.003)*1.5)*dt/1000;
+    rival=rivalAcc;
+    const secLeft=Math.max(0,Math.ceil((RACE_DUR-elapsed)/1000));
+    TIME.textContent=secLeft;
+    draw();
+    if(rival>=88){endRace(false);return;}
+    if(elapsed>=RACE_DUR){endRace(p1>=rival);return;}
+    raceRaf=requestAnimationFrame(loop);
   }
   START.onclick=()=>{
-    p1=0;rival=0;timeLeft=10;running=true;
-    TAP.disabled=false;START.disabled=true;MSG.textContent='Go!';
-    TIME.textContent=10;updatePositions();
-    const name=S.pet||'cat';
-    P1.textContent=({cat:'🐱',dog:'🐶',bunny:'🐰',fox:'🦊',panda:'🐼',penguin:'🐧',unicorn:'🦄',frog:'🐸',bear:'🐻',manatee:'🐾'}[name]||'🐾');
-    raceTimer=setInterval(()=>{
-      timeLeft--;TIME.textContent=timeLeft;
-      rival+=8+Math.random()*4;
-      updatePositions();
-      if(rival>=90&&running){endRace();return;}
-      if(timeLeft<=0&&running)endRace();
-    },1000);
+    p1=0;rival=0;rivalAcc=0;startTs=0;lastTs=0;running=true;
+    TAP.disabled=false;START.disabled=true;
+    MSG.textContent='Go! Tap as fast as you can!';TIME.textContent=10;
+    P1.textContent=PET_ICONS[S.pet||'cat']||'🐾';P2.textContent='🌀';
+    draw();raceRaf=requestAnimationFrame(loop);
   };
-  TAP.onclick=()=>{if(!running)return;p1+=5;updatePositions();if(p1>=90&&running)endRace();};
-  function endRace(){
-    clearInterval(raceTimer);running=false;TAP.disabled=true;START.disabled=false;
-    const won=p1>=rival;const prize=won?30:12;
-    S.cash+=prize;S.happy=clamp(S.happy+12);
-    gainXP&&gainXP(won?45:18);S.gameWins=(S.gameWins||0)+(won?1:0);
-    MSG.textContent=won?'🏆 You won! +'+prize+' ☁':'🥈 So close! +'+prize+' ☁';
-    render();checkAchievements&&checkAchievements();
-    toast(won?S.name+' wins the race! 🏆':'Almost! Keep practising 🏁');
+  TAP.onclick=()=>{
+    if(!running)return;
+    p1+=5.5;draw();
+    // quick bounce feedback on the runner
+    P1.style.transform='scale(1.35)';setTimeout(()=>P1.style.transform='',80);
+    if(p1>=88){endRace(true);}
+  };
+  function endRace(won){
+    if(raceRaf){cancelAnimationFrame(raceRaf);raceRaf=null;}
+    running=false;TAP.disabled=true;START.disabled=false;
+    const prize=won?30:12;
+    S.gameWins=(S.gameWins||0)+(won?1:0);
+    gainXP&&gainXP(won?45:18);
+    MSG.textContent=won?'🏆 You win!':'🥈 So close!';
+    setTimeout(()=>showGameResult(
+      won?'🏆':'🥈',
+      won?(S.name||'You')+' wins the race!':'Runner-up! Great effort',
+      won?'First place finish!':'Keep tapping faster next time',
+      prize,()=>START.click()
+    ),350);
   }
+  registerGameStop(()=>{if(raceRaf){cancelAnimationFrame(raceRaf);raceRaf=null;}
+    running=false;TAP.disabled=true;START.disabled=false;
+    p1=0;rival=0;rivalAcc=0;draw();MSG.textContent='Ready to race?';TIME.textContent=10;});
 })();
 
 /* ===== FISHING ===== */
@@ -2527,45 +2684,61 @@ setInterval(()=>{
   if(!POND||!LINE||!HOOK)return;
   const FISH=['🐟','🐠','🐡','🦈','🦑','🦐'];
   const PRIZES=[
-    {msg:'Tiny fish! +10 ☁',fn:()=>{S.cash+=10;S.pantry['fish']=(S.pantry['fish']||0)+1;}},
-    {msg:'Beautiful catch! +20 ☁',fn:()=>{S.cash+=20;S.pantry['sushi']=(S.pantry['sushi']||0)+1;}},
-    {msg:'Big haul! +30 ☁',fn:()=>{S.cash+=30;S.pantry['fish']=(S.pantry['fish']||0)+2;}},
-    {msg:'Nothing… +5 ☁',fn:()=>{S.cash+=5;}},
+    {label:'Tiny fish',cash:10,fn:()=>{S.pantry['fish']=(S.pantry['fish']||0)+1;}},
+    {label:'Beautiful catch',cash:20,fn:()=>{S.pantry['sushi']=(S.pantry['sushi']||0)+1;}},
+    {label:'Big haul',cash:30,fn:()=>{S.pantry['fish']=(S.pantry['fish']||0)+2;}},
+    {label:'Empty hook…',cash:5,fn:()=>{}},
   ];
-  let state='idle',nibbleTimer=null,reelWindow=null;
-  function reset(){state='idle';LINE.style.height='0';HOOK.className='fish-hook';HOOK.style.top='8px';
-    MOB.className='fish-mob';CATCH.style.display='none';REEL.disabled=true;CAST.disabled=false;
-    MSG.textContent='Cast your line to begin!';}
+  let state='idle',nibbleTimer=null,reelWindow=null,castCount=0,totalCash=0;
+  function reset(){
+    clearTimeout(nibbleTimer);clearTimeout(reelWindow);
+    state='idle';LINE.style.height='0';
+    HOOK.className='fish-hook';HOOK.style.top='8px';
+    MOB.className='fish-mob';CATCH.style.display='none';
+    REEL.disabled=true;CAST.disabled=false;
+    MSG.textContent=castCount>0?'Cast again! ('+castCount+' cast'+(castCount!==1?'s':'')+')':'Cast your line to begin!';
+  }
   CAST.onclick=()=>{
     if(state!=='idle')return;
-    state='waiting';CAST.disabled=true;REEL.disabled=true;
+    castCount++;state='waiting';CAST.disabled=true;REEL.disabled=true;
     LINE.style.height='80px';HOOK.classList.add('cast');
     const fishId=FISH[Math.floor(Math.random()*FISH.length)];
     MOB.textContent=fishId;MOB.className='fish-mob swim';
-    MSG.textContent='Waiting for a bite…';
-    const wait=2500+Math.random()*5000;
+    MSG.textContent='Waiting for a bite… 🎣';
+    const wait=2000+Math.random()*4500;
     nibbleTimer=setTimeout(()=>{
       if(state!=='waiting')return;
-      state='nibbling';HOOK.classList.add('nibble');MOB.className='fish-mob';
-      MSG.textContent='🐟 NIBBLE! Reel in NOW!';REEL.disabled=false;
-      reelWindow=setTimeout(()=>{if(state==='nibbling'){state='idle';MSG.textContent='Too slow! The fish got away.';
-        toast('It got away! Try again.');setTimeout(reset,1800);}},1500);
+      state='nibbling';HOOK.classList.add('nibble');
+      MSG.innerHTML='<strong style="color:#e84040">🐟 NIBBLE! Reel in NOW!</strong>';
+      REEL.disabled=false;REEL.style.animation='bite_jig .25s ease-in-out 3';
+      setTimeout(()=>REEL.style.animation='',850);
+      reelWindow=setTimeout(()=>{
+        if(state==='nibbling'){state='idle';MSG.textContent='Too slow — it got away!';
+          REEL.disabled=true;setTimeout(reset,1600);}},1600);
     },wait);
   };
   REEL.onclick=()=>{
     if(state!=='nibbling')return;
-    clearTimeout(reelWindow);state='idle';
+    clearTimeout(reelWindow);state='caught';REEL.disabled=true;
     const prize=PRIZES[Math.floor(Math.random()*PRIZES.length)];
     const fishId=FISH[Math.floor(Math.random()*FISH.length)];
     CATCH.textContent=fishId;CATCH.style.display='block';
-    HOOK.className='fish-hook cast';LINE.style.height='30px';
-    MOB.className='fish-mob';MSG.textContent=prize.msg;
-    prize.fn();S.happy=clamp(S.happy+10);gainXP&&gainXP(30);
-    render();checkAchievements&&checkAchievements();
-    toast('Caught a '+fishId+'! '+prize.msg);
-    setTimeout(reset,2000);
+    HOOK.className='fish-hook cast';LINE.style.height='25px';MOB.className='fish-mob';
+    MSG.textContent='You caught: '+fishId+' '+prize.label+'!';
+    totalCash+=prize.cash;
+    S.cash+=prize.cash;S.happy=clamp(S.happy+8);
+    gainXP&&gainXP(prize.cash);render();
+    // After 3 casts show result, otherwise reset for another cast
+    if(castCount>=3){
+      setTimeout(()=>showGameResult('🎣','Gone Fishing',castCount+' casts · earned ☁'+totalCash,totalCash,
+        ()=>{castCount=0;totalCash=0;reset();}),1800);
+    } else {
+      setTimeout(reset,1900);
+    }
   };
-  POND.onclick=e=>{if(state==='nibbling'&&e.target!==REEL)REEL.click();};
+  POND.onclick=e=>{if(state==='nibbling'&&e.target!==REEL&&e.target!==CAST)REEL.click();};
+  registerGameStop(()=>{clearTimeout(nibbleTimer);clearTimeout(reelWindow);
+    castCount=0;totalCash=0;reset();});
   reset();
 })();
 
