@@ -398,6 +398,31 @@
   /* Day/night room overlay */
   .room-night-overlay{position:absolute;inset:0;pointer-events:none;z-index:4;border-radius:inherit;overflow:hidden;transition:background .9s;}
 
+  /* Level & XP */
+  .lv-pill{display:inline-flex;align-items:center;gap:3px;background:linear-gradient(135deg,#9b8cff,#6f5fd6);
+    color:#fff;font-family:'Baloo 2',cursive;font-weight:700;font-size:.76rem;padding:3px 10px;
+    border-radius:14px;margin-left:8px;}
+  .xp-row{display:flex;align-items:center;gap:8px;margin-top:10px;padding:0 2px;}
+  .xp-track{flex:1;height:7px;background:#edf2fb;border-radius:10px;overflow:hidden;}
+  .xp-fill{height:100%;background:linear-gradient(90deg,#9b8cff,#6f5fd6);border-radius:10px;transition:width .4s;}
+
+  /* Achievements */
+  .ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:10px;margin-top:10px;}
+  .ach-badge{background:#f5f8ff;border:2px solid var(--line);border-radius:14px;padding:8px 4px;
+    text-align:center;transition:all .2s;cursor:default;}
+  .ach-badge.earned{background:linear-gradient(135deg,#fff8e6,#fff2c6);border-color:var(--sun);
+    box-shadow:0 3px 10px rgba(255,206,84,.3);}
+  .ach-badge.locked{opacity:.38;filter:grayscale(.85);}
+  .ach-badge .ai{font-size:1.55rem;display:block;margin-bottom:3px;}
+  .ach-badge .an{font-family:'Baloo 2',cursive;font-size:.62rem;font-weight:700;color:var(--sky-deep);line-height:1.2;}
+
+  /* Spin wheel */
+  .spin-face{width:120px;height:120px;border-radius:50%;
+    background:linear-gradient(135deg,#f0e6ff,#e4d5ff);border:4px solid var(--grape);
+    display:flex;align-items:center;justify-content:center;font-size:3.5rem;margin:16px auto;}
+  .spin-face.go{animation:spinspin .14s ease-in-out infinite alternate;}
+  @keyframes spinspin{from{transform:scale(1) rotate(-5deg)}to{transform:scale(1.1) rotate(6deg)}}
+
 </style>
 </head>
 <body>
@@ -416,6 +441,7 @@
     <div class="adopt-grid" id="adoptGrid"></div>
     <div class="name-field">
       <input id="nameInput" type="text" placeholder="Name your pet" maxlength="14" autocomplete="off">
+      <input id="petBirthday" type="date" placeholder="Birthday (optional)" style="margin-top:8px;width:100%;border:2px solid var(--line);border-radius:12px;padding:10px 14px;font-family:'Nunito',sans-serif;font-size:.95rem;outline:none;color:var(--ink)">
       <button id="adoptBtn" class="b-sun">Bring home</button>
     </div>
   </div>
@@ -424,7 +450,7 @@
 <!-- GAME -->
 <div id="game" class="hidden">
   <div class="statusbar">
-    <div class="pill"><span class="coin"><span class="disc">☁</span><span id="cash">0</span> <span style="font-weight:600;font-size:.8rem;color:var(--muted)">SkyCash</span></span></div>
+    <div class="pill"><span class="coin"><span class="disc">☁</span><span id="cash">0</span> <span style="font-weight:600;font-size:.8rem;color:var(--muted)">SkyCash</span></span><span class="lv-pill">✨ Lv.<span id="lvDisplay">1</span></span></div>
   </div>
   <div class="tabs">
     <button class="tab active" data-tab="home">🏠 Home</button>
@@ -459,6 +485,10 @@
             <span class="lab">Energy</span><div class="track"><div class="f-energy" id="bEnergy"></div></div><span class="pct" id="pEnergy"></span>
           </div>
         </div>
+        <div class="xp-row">
+          <div class="xp-track"><div id="xpBar" class="xp-fill" style="width:0%"></div></div>
+          <span style="font-size:.72rem;color:var(--muted);white-space:nowrap" id="xpLabel">0 / 100 XP</span>
+        </div>
         <div class="btn-row">
           <button id="feedBtn" class="b-coral">Feed</button>
           <button id="playBtn" class="b-mint">Play (+3 ☁)</button>
@@ -468,6 +498,10 @@
       <div class="card">
         <h2>Pantry</h2>
         <div class="grid" id="pantry"></div>
+      </div>
+      <div class="card" id="achCard">
+        <h2>🏆 Achievements</h2>
+        <div class="ach-grid" id="achGrid"></div>
       </div>
     </section>
 
@@ -611,6 +645,11 @@
     <!-- SHOP -->
     <section id="tab-shop" class="hidden">
       <div class="card">
+        <h2>🎡 Daily Spin</h2>
+        <p class="lead">One free spin every day — win SkyCash, food, or surprise prizes!</p>
+        <div class="btn-row center"><button id="spinBtn" class="b-grape">🎡 Spin Now</button></div>
+      </div>
+      <div class="card">
         <h2>Sky Shop</h2>
         <h3>Food</h3>
         <div class="grid" id="shopFood"></div>
@@ -674,6 +713,37 @@
       <button id="adoptConfirm2" class="b-sun">Bring home</button>
       <button id="closeAdoptModal" class="backbtn">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- Level-up modal -->
+<div class="modal-bg" id="levelModal">
+  <div class="modal-card" style="max-width:320px;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:6px">⭐</div>
+    <h2>Level Up!</h2>
+    <p id="levelUpMsg" style="font-family:'Nunito';font-size:1rem;margin:10px 0 22px;color:var(--muted)">Your pet reached a new level!</p>
+    <button id="levelCloseBtn" class="b-sun" style="width:100%;font-size:1rem;padding:14px">Awesome! ⭐</button>
+  </div>
+</div>
+
+<!-- Spin wheel modal -->
+<div class="modal-bg" id="spinModal">
+  <div class="modal-card" style="max-width:320px;text-align:center;">
+    <h2>🎡 Daily Spin</h2>
+    <div class="spin-face" id="spinFace">🎡</div>
+    <p id="spinResult" style="font-family:'Nunito';font-size:.95rem;color:var(--muted);margin:0 0 16px">Tap spin to try your luck!</p>
+    <button id="spinGoBtn" class="b-grape" style="width:100%;font-size:1rem;padding:14px">Spin!</button>
+    <button id="spinCloseBtn" class="backbtn" style="width:100%;margin-top:8px">Close</button>
+  </div>
+</div>
+
+<!-- Birthday modal -->
+<div class="modal-bg" id="birthdayModal">
+  <div class="modal-card" style="max-width:340px;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:6px">🎂</div>
+    <h2 id="birthdayTitle">Happy Birthday!</h2>
+    <p id="birthdayMsg" style="font-family:'Nunito';font-size:.97rem;line-height:1.75;margin:12px 0 22px;color:var(--ink)">Today is your pet's special day!</p>
+    <button id="birthdayCloseBtn" class="b-sun" style="width:100%;font-size:1rem;padding:14px">🎉 Celebrate!</button>
   </div>
 </div>
 
@@ -752,7 +822,9 @@ const FURN=[
 ];
 
 let S={adopted:false,pet:'cat',name:'',cash:50,
-  hunger:72,happy:72,energy:82,pantry:{},furn:{},placed:[],best:0};
+  hunger:72,happy:72,energy:82,pantry:{},furn:{},placed:[],best:0,
+  level:1,xp:0,feedCount:0,playCount:0,tapCount:0,gameWins:0,
+  spinCount:0,achievements:[],birthday:'',birthdayCelebrated:false,isBirthday:false};
 
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
@@ -775,9 +847,10 @@ let chosen='cat';
   g.appendChild(d);});})();
 $('adoptBtn').onclick=()=>{const nm=$('nameInput').value.trim();
   if(!nm){toast('Give your pet a name first!');$('nameInput').focus();return;}
-  S.adopted=true;S.pet=chosen;S.name=nm;
+  S.adopted=true;S.pet=chosen;S.name=nm;S.birthday=$('petBirthday').value||'';
   $('adoptWrap').classList.add('hidden');$('game').classList.remove('hidden');
-  buildShop();render();toast('Welcome home, '+nm+'! ☁');};
+  buildShop();renderAchievements();render();toast('Welcome home, '+nm+'! ☁');
+  setTimeout(checkBirthday,800);};
 $('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('adoptBtn').click();});
 
 /* tabs */
@@ -798,6 +871,10 @@ function render(){
   $('bHunger').style.width=S.hunger+'%';$('pHunger').textContent=Math.round(S.hunger);
   $('bHappy').style.width=S.happy+'%';$('pHappy').textContent=Math.round(S.happy);
   $('bEnergy').style.width=S.energy+'%';$('pEnergy').textContent=Math.round(S.energy);
+  const lv=S.level||1,xp=S.xp||0,need=lv*100;
+  const lvEl=$('lvDisplay');if(lvEl)lvEl.textContent=lv;
+  const xpBar=$('xpBar');if(xpBar)xpBar.style.width=Math.min(100,(xp/need*100))+'%';
+  const xpLbl=$('xpLabel');if(xpLbl)xpLbl.textContent=xp+' / '+need+' XP';
   renderPantry();renderRoom();renderFurnInv();
 }
 function renderPantry(){const el=$('pantry');const items=Object.entries(S.pantry).filter(([,n])=>n>0);
@@ -830,17 +907,17 @@ function heart(){const fx=['💛','⭐','✨','💙','🌸'];const n=3;
 // bounce() must remove its class after the animation so the idle breathe can resume
 function bounce(){const p=$('petHolder');p.classList.remove('bounce');void p.offsetWidth;p.classList.add('bounce');
   clearTimeout(p._bt);p._bt=setTimeout(()=>p.classList.remove('bounce'),660);}
-$('petHolder').onclick=()=>{S.happy=clamp(S.happy+4);bounce();heart();render();};
+$('petHolder').onclick=()=>{S.happy=clamp(S.happy+4);S.tapCount=(S.tapCount||0)+1;bounce();heart();gainXP(2);checkAchievements();render();};
 $('feedBtn').onclick=()=>{const o=Object.entries(S.pantry).find(([,n])=>n>0);
   if(!o){toast('No food! Visit the W Shop.');return;}feedFrom(o[0]);};
 function feedFrom(id){if(!S.pantry[id]||S.pantry[id]<=0){toast('Out of that food.');return;}
   const f=FOODS.find(x=>x.id===id);S.pantry[id]--;S.hunger=clamp(S.hunger+f.fill);S.happy=clamp(S.happy+5);
-  bounce();heart();toast(S.name+' ate the '+f.nm+'!');render();}
+  S.feedCount=(S.feedCount||0)+1;bounce();heart();toast(S.name+' ate the '+f.nm+'!');gainXP(5);checkAchievements();render();}
 $('playBtn').onclick=()=>{if(S.energy<15){toast(S.name+' is too tired to play.');return;}
   S.happy=clamp(S.happy+15);S.energy=clamp(S.energy-12);S.hunger=clamp(S.hunger-6);S.cash+=3;
-  bounce();heart();toast('Played together! +3 ☁');render();};
+  S.playCount=(S.playCount||0)+1;bounce();heart();toast('Played together! +3 ☁');gainXP(8);checkAchievements();render();};
 $('restBtn').onclick=()=>{S.energy=clamp(S.energy+45);S.hunger=clamp(S.hunger-8);
-  toast(S.name+' had a lovely nap.');render();};
+  toast(S.name+' had a lovely nap.');gainXP(3);checkAchievements();render();};
 
 /* shop */
 function buildShop(){const sf=$('shopFood');sf.innerHTML='';
@@ -1817,6 +1894,7 @@ render = function() {
     if (typeof migratePlaced === 'function') migratePlaced();
     render();
     toast('Welcome back, ' + S.name + '! ☁');
+    setTimeout(()=>{checkBirthday&&checkBirthday();},800);
   }
 })();
 
@@ -1916,6 +1994,153 @@ applyDayNight();
 /* Hook mood visuals into render (after all other render hooks) */
 const _moodRender=render;
 render=function(){_moodRender();updateMoodVisuals();};
+
+/* ===== PET LEVELS & XP ===== */
+function gainXP(amount){
+  if(!S.adopted)return;
+  S.xp=(S.xp||0)+amount;
+  let needed=(S.level||1)*100;
+  while(S.xp>=needed){S.xp-=needed;S.level=(S.level||1)+1;needed=S.level*100;showLevelUp();}
+}
+function showLevelUp(){
+  const bonus=[0,20,25,30,35,50,60,70,80,90,100];
+  const b=bonus[Math.min(S.level-1,bonus.length-1)]||60;
+  S.cash+=b;
+  const m=$('levelModal');if(!m)return;
+  $('levelUpMsg').textContent=`${S.name} reached Level ${S.level}! Bonus: +${b} SkyCash ☁`;
+  m.classList.add('show');
+  $('levelCloseBtn').onclick=()=>{m.classList.remove('show');checkAchievements();render();};
+}
+
+/* ===== ACHIEVEMENTS ===== */
+const ACHIEVEMENTS=[
+  {id:'first_feed',name:'First Bite',desc:'Feed your pet',icon:'🍴',check:s=>(s.feedCount||0)>=1},
+  {id:'feed10',name:'Regular Meals',desc:'Feed 10 times',icon:'🍽️',check:s=>(s.feedCount||0)>=10},
+  {id:'feed50',name:'Master Chef',desc:'Feed 50 times',icon:'👨‍🍳',check:s=>(s.feedCount||0)>=50},
+  {id:'play10',name:'Playdate',desc:'Play 10 times',icon:'🎮',check:s=>(s.playCount||0)>=10},
+  {id:'play50',name:'Champion',desc:'Play 50 times',icon:'🏆',check:s=>(s.playCount||0)>=50},
+  {id:'tap50',name:'Pet Lover',desc:'Tap your pet 50 times',icon:'💖',check:s=>(s.tapCount||0)>=50},
+  {id:'lv5',name:'Rising Star',desc:'Reach Level 5',icon:'⭐',check:s=>(s.level||1)>=5},
+  {id:'lv10',name:'Sky Legend',desc:'Reach Level 10',icon:'🌟',check:s=>(s.level||1)>=10},
+  {id:'rich',name:'Sky Rich',desc:'Collect 500 SkyCash',icon:'💰',check:s=>(s.cash||0)>=500},
+  {id:'decorator',name:'Decorator',desc:'Place 5 room items',icon:'🛋️',check:s=>(s.placed||[]).length>=5},
+  {id:'birthday',name:'Birthday Star',desc:'Celebrate a birthday',icon:'🎂',check:s=>!!s.birthdayCelebrated},
+  {id:'spinner',name:'Lucky Spinner',desc:'Spin the wheel 3 times',icon:'🎡',check:s=>(s.spinCount||0)>=3},
+];
+function checkAchievements(){
+  if(!S.adopted)return;
+  if(!Array.isArray(S.achievements))S.achievements=[];
+  ACHIEVEMENTS.forEach(a=>{
+    if(!S.achievements.includes(a.id)&&a.check(S)){
+      S.achievements.push(a.id);
+      toast('🏆 Achievement unlocked: '+a.name+'!');
+      renderAchievements();
+    }
+  });
+}
+function renderAchievements(){
+  const g=$('achGrid');if(!g)return;g.innerHTML='';
+  ACHIEVEMENTS.forEach(a=>{
+    const earned=Array.isArray(S.achievements)&&S.achievements.includes(a.id);
+    const d=document.createElement('div');
+    d.className='ach-badge '+(earned?'earned':'locked');
+    d.title=a.desc+(earned?' ✓':'');
+    d.innerHTML=`<span class="ai">${a.icon}</span><span class="an">${a.name}</span>`;
+    g.appendChild(d);
+  });
+}
+
+/* ===== PET BIRTHDAY ===== */
+function checkBirthday(){
+  if(!S.adopted||!S.birthday)return;
+  const today=new Date();
+  const bday=new Date(S.birthday+'T12:00:00');
+  if(today.getMonth()!==bday.getMonth()||today.getDate()!==bday.getDate())return;
+  const key='skz_bday_'+today.getFullYear()+'_'+S.name;
+  if(localStorage.getItem(key))return;
+  S.isBirthday=true;
+  const m=$('birthdayModal');if(!m)return;
+  $('birthdayTitle').textContent='Happy Birthday, '+S.name+'! 🎂';
+  $('birthdayMsg').textContent=
+    `Today is ${S.name}'s birthday! The room is decorated and Noah sent a special birthday bonus of 50 SkyCash! 🎉🎈`;
+  m.classList.add('show');
+  $('birthdayCloseBtn').onclick=()=>{
+    m.classList.remove('show');
+    S.cash+=50;S.birthdayCelebrated=true;
+    localStorage.setItem(key,'1');
+    render();checkAchievements();renderBirthdayDecor();
+  };
+}
+function renderBirthdayDecor(){
+  const r=$('room');if(!r)return;
+  let bd=r.querySelector('.bday-decor');
+  if(!S.isBirthday){if(bd)bd.remove();return;}
+  if(bd)return;
+  bd=document.createElement('div');bd.className='bday-decor';
+  bd.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;border-radius:inherit;';
+  bd.innerHTML=
+    '<span style="position:absolute;left:6%;top:7%;font-size:1.7rem">🎈</span>'+
+    '<span style="position:absolute;right:6%;top:7%;font-size:1.7rem">🎈</span>'+
+    '<span style="position:absolute;left:50%;transform:translateX(-50%);top:3%;font-size:1.2rem">🎉</span>'+
+    '<span style="position:absolute;left:22%;bottom:12%;font-size:1.3rem">🎊</span>'+
+    '<span style="position:absolute;right:22%;bottom:12%;font-size:1.3rem">🎊</span>'+
+    '<span style="position:absolute;left:50%;transform:translateX(-50%);bottom:8%;font-size:1.2rem">🎂</span>';
+  r.appendChild(bd);
+}
+
+/* ===== DAILY SPIN WHEEL ===== */
+const SPIN_PRIZES=[
+  {emoji:'⭐',label:'10 SkyCash',weight:30,fn:()=>{S.cash+=10;}},
+  {emoji:'💫',label:'25 SkyCash',weight:20,fn:()=>{S.cash+=25;}},
+  {emoji:'🌟',label:'50 SkyCash',weight:8,fn:()=>{S.cash+=50;}},
+  {emoji:'💰',label:'100 SkyCash!',weight:2,fn:()=>{S.cash+=100;}},
+  {emoji:'🍰',label:'Free Cake',weight:14,fn:()=>{S.pantry['cake']=(S.pantry['cake']||0)+1;}},
+  {emoji:'🍕',label:'Free Pizza',weight:10,fn:()=>{S.pantry['pizza']=(S.pantry['pizza']||0)+1;}},
+  {emoji:'🍣',label:'Free Sushi',weight:8,fn:()=>{S.pantry['sushi']=(S.pantry['sushi']||0)+1;}},
+  {emoji:'🎁',label:'Try again tomorrow!',weight:8,fn:()=>{}},
+];
+function pickPrize(){
+  const total=SPIN_PRIZES.reduce((s,p)=>s+p.weight,0);
+  let r=Math.random()*total;
+  for(const p of SPIN_PRIZES){r-=p.weight;if(r<=0)return p;}
+  return SPIN_PRIZES[0];
+}
+function openSpin(){
+  if(!S.adopted){toast('Adopt a pet first!');return;}
+  const today=new Date().toDateString();
+  const m=$('spinModal');if(!m)return;
+  const face=$('spinFace'),res=$('spinResult'),go=$('spinGoBtn');
+  const alreadySpun=localStorage.getItem('skz_spin')===today;
+  face.textContent='🎡';face.classList.remove('go');
+  res.textContent=alreadySpun?'You already spun today — come back tomorrow! ☁':'Tap spin to try your luck!';
+  go.disabled=alreadySpun;go.style.opacity=alreadySpun?'0.5':'1';
+  go.onclick=alreadySpun?null:()=>{
+    go.disabled=true;face.classList.add('go');
+    const pool=SPIN_PRIZES.map(p=>p.emoji);let f=0;
+    const ticker=setInterval(()=>{face.textContent=pool[f++%pool.length];},110);
+    const prize=pickPrize();
+    setTimeout(()=>{
+      clearInterval(ticker);face.classList.remove('go');
+      face.textContent=prize.emoji;
+      res.textContent='You won: '+prize.label+' 🎉';
+      prize.fn();
+      S.spinCount=(S.spinCount||0)+1;
+      localStorage.setItem('skz_spin',today);
+      render();checkAchievements();
+    },2100);
+  };
+  m.classList.add('show');
+}
+$('spinBtn')&&($('spinBtn').onclick=openSpin);
+$('spinCloseBtn')&&($('spinCloseBtn').onclick=()=>$('spinModal').classList.remove('show'));
+
+/* Hook birthday decor and achievements into game load */
+const _loadRender=render;
+render=function(){
+  _loadRender();
+  renderBirthdayDecor();
+  renderAchievements();
+};
 
 </script>
 </body>
