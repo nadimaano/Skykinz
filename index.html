@@ -914,9 +914,7 @@
           <div class="room-baseboard"></div>
           <div id="roomNightOverlay" class="room-night-overlay"></div>
           <div class="room-pet" id="roomPet"></div>
-          <div class="room-pet noah-companion" id="noahPet">
-            <div class="noah-bubble" id="noahBubble"></div>
-          </div>
+          <div class="room-pet noah-companion" id="noahPet"></div>
           <div class="floor-items" id="floorItems"></div>
           <div class="hint" id="roomHint">your room is empty</div>
         </div>
@@ -2632,9 +2630,10 @@ function buildDailyDeals(){
 /* ===== NOAH COMPANION PET ===== */
 function renderNoahPet(){
   const np=$('noahPet');if(!np)return;
-  const nId=S.noahPetId||'bear';
+  const nId=S.noahPetId||'otter';
   if(!SPRITES[nId])return;
-  np.innerHTML='<div class="walker"><img class="rp-sprite" src="data:image/svg+xml,'+encodeURIComponent(SPRITES[nId])+'"></div>';
+  np.innerHTML='<div class="walker"><img class="rp-sprite" src="data:image/svg+xml,'+encodeURIComponent(SPRITES[nId])+'"></div>'
+    +'<div class="noah-bubble" id="noahBubble"></div>';
 }
 /* Hook Noah pet into room tab open */
 (function(){
