@@ -305,14 +305,27 @@
 
   /* Noah companion pet */
   .noah-companion{right:8px!important;left:auto!important;width:66px!important;height:66px!important;
-    bottom:8px!important;animation:np_bob 3.4s ease-in-out infinite;z-index:3!important;}
+    bottom:8px!important;animation:np_bob 3.4s ease-in-out infinite;z-index:3!important;cursor:pointer;}
   @keyframes np_bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-  .noah-companion::before{content:'♡ Noah';position:absolute;top:-15px;left:50%;
-    transform:translateX(-50%);font-size:.52rem;font-family:'Baloo 2',cursive;
-    color:var(--grape);white-space:nowrap;opacity:.7;pointer-events:none;}
   .noah-heart{position:absolute;pointer-events:none;font-size:1rem;z-index:10;
     animation:nh_float 1.6s ease-out forwards;}
   @keyframes nh_float{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-45px)}}
+  /* Noah speech bubble */
+  .noah-bubble{position:absolute;right:64px;bottom:32px;background:#fff;
+    border:2.5px solid var(--grape);border-radius:18px 18px 4px 18px;
+    padding:8px 13px;max-width:180px;min-width:110px;
+    font-family:'Baloo 2',cursive;font-size:.72rem;font-weight:600;
+    color:var(--grape);line-height:1.4;text-align:center;z-index:20;
+    box-shadow:0 4px 16px rgba(100,60,160,.18);
+    opacity:0;transform:scale(.8) translateY(6px);pointer-events:none;
+    transition:opacity .25s,transform .25s cubic-bezier(.34,1.56,.64,1);}
+  .noah-bubble.show{opacity:1;transform:scale(1) translateY(0);}
+  .noah-bubble::after{content:'';position:absolute;bottom:-10px;right:10px;
+    width:0;height:0;border-left:8px solid transparent;
+    border-right:4px solid transparent;border-top:10px solid var(--grape);}
+  .noah-bubble::before{content:'';position:absolute;bottom:-7px;right:11px;
+    width:0;height:0;border-left:7px solid transparent;
+    border-right:3px solid transparent;border-top:9px solid #fff;z-index:1;}
 
   /* Wallpaper shop */
   .wp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px;}
@@ -901,7 +914,9 @@
           <div class="room-baseboard"></div>
           <div id="roomNightOverlay" class="room-night-overlay"></div>
           <div class="room-pet" id="roomPet"></div>
-          <div class="room-pet noah-companion" id="noahPet"></div>
+          <div class="room-pet noah-companion" id="noahPet">
+            <div class="noah-bubble" id="noahBubble"></div>
+          </div>
           <div class="floor-items" id="floorItems"></div>
           <div class="hint" id="roomHint">your room is empty</div>
         </div>
@@ -2628,6 +2643,59 @@ function renderNoahPet(){
     if(t.dataset.tab==='room')renderNoahPet();};});
   if(S.adopted)renderNoahPet();
 })();
+/* ===== NOAH COMPLIMENTS ===== */
+(function(){
+  const COMPLIMENTS=[
+    'Skylar, you are literally sunshine in human form ☀️',
+    'The world is so much cuter because you\'re in it, Skylar 🌸',
+    'Skylar, your smile could outshine every star 🌟',
+    'You are the kindest soul I have ever met, Skylar 💖',
+    'Skylar deserves every good thing the universe has to offer 🌈',
+    'Being around Skylar just makes everything feel magical ✨',
+    'Skylar, you have the most beautiful heart 🩷',
+    'You light up every room you walk into, Skylar 🕯️',
+    'Skylar is genuinely one of a kind and the world knows it 💫',
+    'Your laugh is honestly the best sound ever, Skylar 🎶',
+    'Skylar, you make people feel so seen and so loved 🤗',
+    'The way Skylar cares about others is absolutely everything 🌻',
+    'Skylar, you are so talented and don\'t even realize it 🎨',
+    'You radiate good energy wherever you go, Skylar 🌺',
+    'Skylar is proof that angels exist 👼',
+    'Everything is more fun when Skylar is around 🎉',
+    'Skylar, your kindness changes people\'s whole days 💝',
+    'You are doing so amazingly well, Skylar, keep going 🦋',
+    'Skylar, you deserve all the hugs and all the flowers 🌷',
+    'The people who have Skylar in their life are so lucky 🍀',
+  ];
+  let bubbleTimer=null,hideTimer=null;
+  function showCompliment(){
+    const b=$('noahBubble');if(!b)return;
+    b.textContent=COMPLIMENTS[Math.floor(Math.random()*COMPLIMENTS.length)];
+    b.classList.add('show');
+    clearTimeout(hideTimer);
+    hideTimer=setTimeout(()=>b.classList.remove('show'),5000);
+  }
+  // Show one shortly after entering the room tab
+  function scheduleFirst(){clearTimeout(bubbleTimer);bubbleTimer=setTimeout(showCompliment,2200);}
+  // Cycle every ~20s while in room
+  setInterval(()=>{
+    const room=$('tab-room');if(!room||room.classList.contains('hidden'))return;
+    showCompliment();
+  },20000);
+  // Click Noah to get a compliment instantly
+  document.addEventListener('click',e=>{
+    if(e.target.closest('#noahPet'))showCompliment();
+  });
+  // Hook into tab switching
+  document.querySelectorAll('.tab').forEach(t=>{
+    const orig=t.onclick;t.onclick=function(e){
+      if(orig)orig.call(this,e);
+      if(t.dataset.tab==='room')scheduleFirst();
+    };
+  });
+  if(S.adopted)scheduleFirst();
+})();
+
 /* Occasionally float hearts between pets in the room */
 setInterval(()=>{
   const rp=$('roomPet');const np=$('noahPet');const room=$('room');
